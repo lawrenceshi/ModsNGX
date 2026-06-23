@@ -24,8 +24,7 @@ libc6-dev \
 libtool \
 libpcre2-dev \
 zlib1g-dev \
-libssl-dev \
-&& rm -rf /var/lib/apt/lists/*
+libssl-dev
 
 # -- 弃用代码 --
 # Download and Compile the ModSecurity 3.0 Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
