@@ -9,7 +9,7 @@ WORKDIR /usr/src/
 
 # AI gave me this code: NGINX_VERSION=$(nginx -v 2>&1 | cut -d'/' -f2)
 
-#安装所有依赖
+# Install the dependency
 RUN apt-get update && \
 apt-get install -y \
 curl \
@@ -26,7 +26,7 @@ libpcre2-dev \
 zlib1g-dev \
 libssl-dev
 
-# -- 弃用代码 --
+# -- Deprecated code --
 # Download and Compile the ModSecurity 3.0 Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
 # 1. Get releases from api
 # 2. Use jq to analysis the link we need
@@ -51,8 +51,7 @@ libssl-dev
 
 RUN mkdir /tmp/compiled_nginx_modules_dependencies
 
-### Download and Compile the coraza-nginx Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
-# 1. Download and build https://github.com/corazawaf/libcoraza
+### 1. Download and build https://github.com/corazawaf/libcoraza
 RUN git clone --depth 1 --single-branch https://github.com/corazawaf/libcoraza.git /usr/src/libcoraza
 WORKDIR /usr/src/libcoraza
 RUN ./build.sh &&\
@@ -138,12 +137,9 @@ RUN ./configure --with-compat \
 --add-dynamic-module=/usr/src/headers-more-nginx-module/ &&\
 make -j$(nproc) modules
 
-#调试完毕，成功编译，接下来复制成果
+# Copy the compiled files
 
 FROM docker.io/library/nginx:mainline AS PRODUCTION
-
-# 告诉运行时的 Linux 系统去这里找 LuaJIT 的动态库
-ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
 
 COPY --from=BUILDER /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
 COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
