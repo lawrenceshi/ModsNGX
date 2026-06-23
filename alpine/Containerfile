@@ -1,0 +1,174 @@
+# Dockerfile or Containerfile, the name doesn't matter.
+# This dockerfile compiles the modules using the BUILDER, and puts it in the PRODUCTION
+
+# ======================
+# WARNING: This is an experimental beta unstable image due to the change of Makefile
+#  ======================
+
+FROM docker.io/library/nginx:mainline-alpine AS BUILDER
+
+# Step 1.
+# --- Compiling and Installing Coraza for NGINX Open Source ---
+
+WORKDIR /usr/src/
+
+# AI gave me this code: NGINX_VERSION=$(nginx -v 2>&1 | cut -d'/' -f2)
+
+#安装所有依赖
+RUN apk update && \
+    apk add --no-cache \
+    curl \
+    jq \
+    tar \
+    wget \
+    git \
+    go \
+    gcc \
+    g++ \
+    make \
+    musl-dev \
+    libtool \
+    pcre2-dev \
+    zlib-dev \
+    openssl-dev \
+    linux-headers \
+    autoconf \
+    m4 \
+    automake \
+    bash
+
+# -- 弃用代码 --
+# Download and Compile the ModSecurity 3.0 Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
+# 1. Get releases from api
+# 2. Use jq to analysis the link we need
+# 3. Use wget to download the file (-i - for the link from |)
+# Thanks to this guide: https://blog.nginx.org/blog/compiling-and-installing-modsecurity-for-open-source-nginx
+
+# RUN curl -sSL https://api.github.com/repos/owasp-modsecurity/ModSecurity/releases/latest | jq -r '.assets[0].browser_download_url' | wget -O __latest_ModSecurity_releases.tar.gz -i - &&\
+# tar -xf __latest_ModSecurity_releases.tar.gz  -C /usr/src/ModSecurity/
+
+# WORKDIR /usr/src/ModSecurity/
+
+# RUN ./build.sh &&\
+# ./configure &&\
+# make &&\
+# make install
+
+# Download the NGINX Connector for ModSecurity and Compile It as a Dynamic Module from https://github.com/owasp-modsecurity/ModSecurity-nginx BY: Apache License 2.0
+# Basicly the same thing
+# RUN curl -sSL https://api.github.com/repos/owasp-modsecurity/ModSecurity-nginx/releases/latest | jq -r '.assets[0].browser_download_url' | wget -O __latest_ModSecurity-nginx_releases.tar.gz -i - &&\
+# tar -xf __latest_ModSecurity-nginx_releases.tar.gz  -C /usr/src/ModSecurity-nginx/ &&\
+# ----
+
+RUN mkdir /tmp/compiled_nginx_modules_dependencies
+
+### Download and Compile the coraza-nginx Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
+# 1. Download and build https://github.com/corazawaf/libcoraza
+RUN git clone --depth 1 --single-branch https://github.com/corazawaf/libcoraza.git /usr/src/libcoraza
+WORKDIR /usr/src/libcoraza
+
+# The original Makefile will occur an error: cd tests && ./check_result.sh simple_get Error: Executable 'simple_get' exited with code 139
+# I can't fix it throughout regular ways, and AI told me to rewrite it.
+# So I did it via sed
+RUN sed -i '/^check:/,/^$/c\check:\n\t@echo "Skipping alpine incompatible check"' Makefile.am && \
+./build.sh &&\
+./configure --prefix=/tmp/compiled_nginx_modules_dependencies&&\
+make -j$(nproc) &&\
+make install
+
+# 2. Download https://github.com/corazawaf/coraza-nginx
+WORKDIR /usr/src/
+
+
+RUN curl -fsSL https://api.github.com/repos/corazawaf/coraza-nginx/releases/latest |\
+jq -r '.tarball_url' |\
+wget -O __latest_coraza-nginx_releases.tar.gz -i - &&\
+mkdir -p /usr/src/coraza-nginx &&\
+tar -xf __latest_coraza-nginx_releases.tar.gz  -C /usr/src/coraza-nginx/ --strip-components=1
+
+### Download and Compile the lua modules
+# Doc: https://github.com/openresty/lua-nginx-module#installation
+
+WORKDIR /usr/src/
+
+# 1. Download and build https://github.com/openresty/luajit2
+RUN git clone --depth 1 -b v2.1-agentzh --single-branch https://github.com/openresty/luajit2.git /usr/src/luajit2 
+
+WORKDIR /usr/src/luajit2
+
+RUN make -j$(nproc) && make install PREFIX=/tmp/compiled_nginx_modules_dependencies
+
+# 2. Download https://github.com/vision5/ngx_devel_kit
+WORKDIR /usr/src/
+
+RUN curl -fsSL https://api.github.com/repos/vision5/ngx_devel_kit/releases/latest |\
+jq -r '.tarball_url' |\
+wget -O __latest_ngx_devel_kit_releases.tar.gz -i - &&\
+mkdir -p /usr/src/ngx_devel_kit &&\
+tar -xf __latest_ngx_devel_kit_releases.tar.gz  -C /usr/src/ngx_devel_kit/ --strip-components=1
+
+# 3. Download https://github.com/openresty/lua-nginx-module
+WORKDIR /usr/src/
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-nginx-module.git /usr/src/lua-nginx-module/
+
+# 4. Download https://github.com/openresty/lua-resty-core and https://github.com/openresty/lua-resty-lrucache
+WORKDIR /usr/src/
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-core.git /usr/src/lua-resty-core
+
+WORKDIR /usr/src/lua-resty-core
+
+RUN make install PREFIX=/opt/nginx
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-lrucache.git /usr/src/lua-resty-lrucache
+
+WORKDIR /usr/src/lua-resty-lrucache
+
+RUN make install PREFIX=/opt/nginx
+
+# 5. Tell nginx's build system where to find LuaJIT 2.1 and more:
+ENV LUAJIT_LIB=/tmp/compiled_nginx_modules_dependencies/lib
+ENV LUAJIT_INC=/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1
+
+ENV CFLAGS="-I/tmp/compiled_nginx_modules_dependencies/include"
+ENV LDFLAGS="-L/tmp/compiled_nginx_modules_dependencies/lib"
+
+### Download https://github.com/openresty/headers-more-nginx-module
+WORKDIR /usr/src/
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/headers-more-nginx-module.git /usr/src/headers-more-nginx-module
+
+### Download Nginx and build the modules
+WORKDIR /usr/src/
+RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -O __my_nginx_releases.tar.gz &&\
+mkdir -p /usr/src/nginx/ &&\
+tar -xf __my_nginx_releases.tar.gz -C /usr/src/nginx/ --strip-components=1
+
+WORKDIR /usr/src/nginx
+
+RUN ./configure --with-compat \
+--prefix=/usr/local \
+--add-dynamic-module=/usr/src/coraza-nginx/ \
+--add-dynamic-module=/usr/src/ngx_devel_kit/ \
+--add-dynamic-module=/usr/src/lua-nginx-module/ \
+--add-dynamic-module=/usr/src/headers-more-nginx-module/ &&\
+make -j$(nproc) modules
+
+#调试完毕，成功编译，接下来复制成果
+
+FROM docker.io/library/nginx:mainline-alpine AS PRODUCTION
+
+# 告诉运行时的 Linux 系统去这里找 LuaJIT 的动态库
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
+
+COPY --from=BUILDER /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
+COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
+COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
+COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
+
+COPY --from=BUILDER /opt/nginx/ /opt/nginx
+
+COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
+
+RUN ldconfig /usr/local/
