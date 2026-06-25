@@ -137,7 +137,37 @@ RUN ./configure --with-compat \
 --add-dynamic-module=/usr/src/headers-more-nginx-module/ &&\
 make -j$(nproc) modules
 
-# Copy the compiled files
+### Download and Install crowdsec-nginx-bouncer and its dependency
+# 1. Download and Install https://github.com/ledgetech/lua-resty-http/
+
+RUN curl -fsSL https://api.github.com/repos/ledgetech/lua-resty-http/releases/latest |\
+jq -r '.tarball_url' |\
+wget -O __latest_lua-resty-http_releases.tar.gz -i - &&\
+mkdir -p /tmp/lua-resty-http &&\
+tar -xf __latest_lua-resty-http_releases.tar.gz  -C /tmp/lua-resty-http --strip-components=1
+
+# 1.1 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/openresty/lua-resty-string
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-string /tmp/lua-resty-string
+
+# 1.2 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/fffonion/lua-resty-openssl
+
+RUN git clone --depth 1 --single-branch https://github.com/fffonion/lua-resty-openssl /tmp/lua-resty-openssl
+
+# 2. Download and Compile https://github.com/mpx/lua-cjson
+
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-cjson/ /usr/src/lua-cjson
+WORKDIR /usr/src/lua-cjson
+# I can't just change the PREFIX because I will copy all the file to /usr/local in the PRODUCTION environment
+RUN make LUA_VERSION=5.1 \
+CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1" \
+LUA_INCLUDE_DIR=/tmp/compiled_nginx_modules_dependencies/include \
+LUA_CMODULE_DIR=/tmp/compiled_nginx_modules_dependencies/lib/lua/5.1 \
+LUA_MODULE_DIR=/tmp/compiled_nginx_modules_dependencies/share/lua/5.1 \
+LUA_BIN_DIR=/tmp/compiled_nginx_modules_dependencies/bin &&\
+make install PREFIX=/tmp/compiled_nginx_modules_dependencies
+
+### Copy the compiled files
 
 FROM docker.io/library/nginx:mainline AS PRODUCTION
 
@@ -149,5 +179,11 @@ COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/module
 COPY --from=BUILDER /opt/nginx/ /opt/nginx
 
 COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
+
+# Copy the crowdsec-nginx-bouncer and its dependency
+
+COPY --from=BUILDER /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=BUILDER /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=BUILDER /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
 
 RUN ldconfig
