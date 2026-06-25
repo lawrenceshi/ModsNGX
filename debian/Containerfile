@@ -55,9 +55,9 @@ RUN mkdir /tmp/compiled_nginx_modules_dependencies
 RUN git clone --depth 1 --single-branch https://github.com/corazawaf/libcoraza.git /usr/src/libcoraza
 WORKDIR /usr/src/libcoraza
 RUN ./build.sh &&\
-./configure --prefix=/tmp/compiled_nginx_modules_dependencies&&\
+./configure --prefix=/usr/local &&\
 make -j$(nproc) &&\
-make install
+make install DESTDIR=/tmp/compiled_nginx_modules_dependencies_DISTDIR/
 
 # 2. Download https://github.com/corazawaf/coraza-nginx
 WORKDIR /usr/src/
@@ -113,7 +113,7 @@ RUN make install PREFIX=/opt/nginx
 ENV LUAJIT_LIB=/tmp/compiled_nginx_modules_dependencies/lib
 ENV LUAJIT_INC=/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1
 
-ENV CFLAGS="-I/tmp/compiled_nginx_modules_dependencies/include"
+ENV CFLAGS="-I/tmp/compiled_nginx_modules_dependencies/include -I/tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local/include"
 ENV LDFLAGS="-L/tmp/compiled_nginx_modules_dependencies/lib"
 
 ### Download https://github.com/openresty/headers-more-nginx-module
@@ -179,6 +179,7 @@ COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/module
 COPY --from=BUILDER /opt/nginx/ /opt/nginx
 
 COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
+COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
 
 # Copy the crowdsec-nginx-bouncer and its dependency
 
