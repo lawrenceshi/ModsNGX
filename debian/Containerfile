@@ -1,6 +1,7 @@
 # Dockerfile or Containerfile, the name doesn't matter.
-# This dockerfile compiles the modules using the BUILDER, and puts it in the PRODUCTION
-FROM docker.io/library/nginx:mainline AS BUILDER
+# This dockerfile compiles the modules using the builder, and puts it in the production
+# The stage name should be lowercase according to StageNameCasing (https://docs.docker.com/reference/build-checks/stage-name-casing/).
+FROM docker.io/library/nginx:mainline AS builder
 
 # Step 1.
 # --- Compiling and Installing Coraza for NGINX Open Source ---
@@ -133,7 +134,7 @@ RUN git clone --depth 1 --single-branch https://github.com/fffonion/lua-resty-op
 
 RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-cjson/ /usr/src/lua-cjson
 WORKDIR /usr/src/lua-cjson
-# I can't just change the PREFIX because I will copy all the file to /usr/local in the PRODUCTION environment
+# I can't just change the PREFIX because I will copy all the file to /usr/local in the production stage
 RUN make LUA_VERSION=5.1 \
 CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1" \
 LUA_INCLUDE_DIR=/tmp/compiled_nginx_modules_dependencies/include \
@@ -144,26 +145,26 @@ make install PREFIX=/tmp/compiled_nginx_modules_dependencies
 
 ### Copy the compiled files
 
-FROM docker.io/library/nginx:mainline AS PRODUCTION
+FROM docker.io/library/nginx:mainline AS production
 
 # Copy the nginx dynamic modules (.so) files
 
-COPY --from=BUILDER /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
+COPY --from=builder /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
 
 # Copy the dependency of the nginx nginx dynamic modules
 
-COPY --from=BUILDER /opt/nginx/ /opt/nginx
-COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
-COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
+COPY --from=builder /opt/nginx/ /opt/nginx
+COPY --from=builder /tmp/compiled_nginx_modules_dependencies/ /usr/local/
+COPY --from=builder /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
 
 # Copy the crowdsec-nginx-bouncer and its dependency
 
-COPY --from=BUILDER /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
-COPY --from=BUILDER /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
-COPY --from=BUILDER /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=builder /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=builder /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=builder /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
 
 # Fresh .so file cache
 RUN ldconfig

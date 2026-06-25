@@ -1,11 +1,12 @@
 # Dockerfile or Containerfile, the name doesn't matter.
-# This dockerfile compiles the modules using the BUILDER, and puts it in the PRODUCTION
+# This dockerfile compiles the modules using the builder, and puts it in the production
 
 # ======================
 # WARNING: This is an experimental beta unstable image due to the change of Makefile
 #  ======================
 
-FROM docker.io/library/nginx:mainline-alpine AS BUILDER
+# The stage name should be lowercase according to StageNameCasing (https://docs.docker.com/reference/build-checks/stage-name-casing/).
+FROM docker.io/library/nginx:mainline-alpine AS builder
 
 # Step 1.
 # --- Compiling and Installing Coraza for NGINX Open Source ---
@@ -157,18 +158,18 @@ make -j$(nproc) modules
 
 #调试完毕，成功编译，接下来复制成果
 
-FROM docker.io/library/nginx:mainline-alpine AS PRODUCTION
+FROM docker.io/library/nginx:mainline-alpine AS production
 
 # 告诉运行时的 Linux 系统去这里找 LuaJIT 的动态库
 ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
 
-COPY --from=BUILDER /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
-COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
+COPY --from=builder /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
+COPY --from=builder /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
 
-COPY --from=BUILDER /opt/nginx/ /opt/nginx
+COPY --from=builder /opt/nginx/ /opt/nginx
 
-COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
+COPY --from=builder /tmp/compiled_nginx_modules_dependencies/ /usr/local/
 
 RUN ldconfig /usr/local/
