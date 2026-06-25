@@ -7,8 +7,6 @@ FROM docker.io/library/nginx:mainline AS BUILDER
 
 WORKDIR /usr/src/
 
-# AI gave me this code: NGINX_VERSION=$(nginx -v 2>&1 | cut -d'/' -f2)
-
 # Install the dependency
 RUN apt-get update && \
 apt-get install -y \
@@ -25,29 +23,6 @@ libtool \
 libpcre2-dev \
 zlib1g-dev \
 libssl-dev
-
-# -- Deprecated code --
-# Download and Compile the ModSecurity 3.0 Source Code from https://github.com/owasp-modsecurity/ModSecurity BY: Apache License 2.0
-# 1. Get releases from api
-# 2. Use jq to analysis the link we need
-# 3. Use wget to download the file (-i - for the link from |)
-# Thanks to this guide: https://blog.nginx.org/blog/compiling-and-installing-modsecurity-for-open-source-nginx
-
-# RUN curl -sSL https://api.github.com/repos/owasp-modsecurity/ModSecurity/releases/latest | jq -r '.assets[0].browser_download_url' | wget -O __latest_ModSecurity_releases.tar.gz -i - &&\
-# tar -xf __latest_ModSecurity_releases.tar.gz  -C /usr/src/ModSecurity/
-
-# WORKDIR /usr/src/ModSecurity/
-
-# RUN ./build.sh &&\
-# ./configure &&\
-# make &&\
-# make install
-
-# Download the NGINX Connector for ModSecurity and Compile It as a Dynamic Module from https://github.com/owasp-modsecurity/ModSecurity-nginx BY: Apache License 2.0
-# Basicly the same thing
-# RUN curl -sSL https://api.github.com/repos/owasp-modsecurity/ModSecurity-nginx/releases/latest | jq -r '.assets[0].browser_download_url' | wget -O __latest_ModSecurity-nginx_releases.tar.gz -i - &&\
-# tar -xf __latest_ModSecurity-nginx_releases.tar.gz  -C /usr/src/ModSecurity-nginx/ &&\
-# ----
 
 RUN mkdir /tmp/compiled_nginx_modules_dependencies
 
@@ -171,13 +146,16 @@ make install PREFIX=/tmp/compiled_nginx_modules_dependencies
 
 FROM docker.io/library/nginx:mainline AS PRODUCTION
 
+# Copy the nginx dynamic modules (.so) files
+
 COPY --from=BUILDER /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
 COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
 COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
 COPY --from=BUILDER /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
 
-COPY --from=BUILDER /opt/nginx/ /opt/nginx
+# Copy the dependency of the nginx nginx dynamic modules
 
+COPY --from=BUILDER /opt/nginx/ /opt/nginx
 COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies/ /usr/local/
 COPY --from=BUILDER /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
 
@@ -187,4 +165,5 @@ COPY --from=BUILDER /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
 COPY --from=BUILDER /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
 COPY --from=BUILDER /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
 
+# Fresh .so file cache
 RUN ldconfig
