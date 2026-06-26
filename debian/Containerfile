@@ -23,7 +23,8 @@ libc6-dev \
 libtool \
 libpcre2-dev \
 zlib1g-dev \
-libssl-dev
+libssl-dev \
+ca-certificates
 
 RUN mkdir /tmp/compiled_nginx_modules_dependencies
 
@@ -107,6 +108,8 @@ WORKDIR /usr/src/nginx
 
 RUN ./configure --with-compat \
 --prefix=/usr/local \
+# Crowdsec needs this to enable lua_ssl_trusted_certificate and others
+--with-http_ssl_module \
 --add-dynamic-module=/usr/src/coraza-nginx/ \
 --add-dynamic-module=/usr/src/ngx_devel_kit/ \
 --add-dynamic-module=/usr/src/lua-nginx-module/ \
@@ -143,6 +146,17 @@ LUA_MODULE_DIR=/tmp/compiled_nginx_modules_dependencies/share/lua/5.1 \
 LUA_BIN_DIR=/tmp/compiled_nginx_modules_dependencies/bin &&\
 make install PREFIX=/tmp/compiled_nginx_modules_dependencies
 
+# 3. The crowdsec boucner
+
+RUN curl -fsSL https://api.github.com/repos/crowdsecurity/cs-nginx-bouncer/releases/latest |\
+jq -r '.assets[0].browser_download_url' |\
+wget -O __latest_cs-nginx-bouncer_releases.tar.gz -i - &&\
+mkdir -p /usr/src/cs-nginx-bouncer &&\
+tar -xf __latest_cs-nginx-bouncer_releases.tar.gz  -C /usr/src/cs-nginx-bouncer/ --strip-components=1
+
+# Remove the lua_package_path because we will declaration the modules in nginx.conf, else error: nginx: [emerg] "lua_package_path" directive is duplicate in /etc/nginx/nginx.conf:38
+RUN sed -i "/^lua_package_path/d" /usr/src/cs-nginx-bouncer/nginx/crowdsec_nginx.conf
+
 ### Copy the compiled files
 
 FROM docker.io/library/nginx:mainline AS production
@@ -160,11 +174,25 @@ COPY --from=builder /opt/nginx/ /opt/nginx
 COPY --from=builder /tmp/compiled_nginx_modules_dependencies/ /usr/local/
 COPY --from=builder /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
 
-# Copy the crowdsec-nginx-bouncer and its dependency
+# Copy the crowdsec-nginx-bouncer's dependency
 
 COPY --from=builder /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
 COPY --from=builder /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
 COPY --from=builder /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
+
+# Copy the crowdsec-nginx-bouncer
+# Refer to https://github.com/crowdsecurity/cs-nginx-bouncer/blob/main/install.sh
+# The user should handle /etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf file on there own in the crowdsec image.
+ARG LIB_PATH="/usr/local/lua/crowdsec/"
+ARG DATA_PATH="/var/lib/crowdsec/lua/"
+RUN mkdir -p ${LIB_PATH}/plugins/crowdsec/ &&\
+    mkdir -p ${DATA_PATH}/templates/
+COPY --from=builder /usr/src/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
+COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/lib ${LIB_PATH}
+COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/templates/ ${DATA_PATH}/templates/
+
+# Copy the ca-certificates because crowdsec needs it.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # Fresh .so file cache
 RUN ldconfig
