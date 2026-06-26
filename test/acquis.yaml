@@ -1,0 +1,11 @@
+# Example from https://docs.crowdsec.net/docs/log_processor/intro/, edited
+# This file is ONLY for Testing cases.
+# NEVER use this in a production environment!
+
+## /etc/crowdsec/acquis.d/file.yaml
+source: file ## The Data Source module to use
+filenames:
+  - /var/log/nginx/*.log
+
+labels:
+  type: nginx

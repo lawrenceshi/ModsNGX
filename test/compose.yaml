@@ -1,0 +1,31 @@
+# This file is ONLY for Testing cases.
+# NEVER use this in a production environment!
+services:
+  nginx:
+    build: ../debian
+    container_name: nginx
+    restart: never
+    ports:
+      - "8081:8081" # HTTP 
+    expose:
+     - "8081"
+    volumes:
+      - ./crowdsec-nginx-bouncer.conf:/etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf:Z,ro
+      - ./logs:/var/log/nginx:z,rw
+      - ./nginx.conf:/etc/nginx/nginx.conf:Z,ro
+
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    restart: never
+    ports:
+      - "8080:8080"
+    expose:
+     - "8080"
+    volumes:
+      - ./acquis.yaml:/etc/crowdsec/acquis.yaml:Z,ro
+      - ./logs:/var/log/nginx:z,ro
+      - ./profiles.yaml:/etc/crowdsec/profiles.yaml:Z,ro
+    environment:
+      - CROWDSEC_BYPASS_DB_VOLUME_CHECK=true
+      - BOUNCER_KEY_nginx_bouncer="key"
