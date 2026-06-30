@@ -26,15 +26,13 @@ zlib1g-dev \
 libssl-dev \
 ca-certificates
 
-RUN mkdir /tmp/compiled_nginx_modules_dependencies
-
 ### 1. Download and build https://github.com/corazawaf/libcoraza
 RUN git clone --depth 1 --single-branch https://github.com/corazawaf/libcoraza.git /usr/src/libcoraza
 WORKDIR /usr/src/libcoraza
 RUN ./build.sh &&\
 ./configure --prefix=/usr/local &&\
 make -j$(nproc) &&\
-make install DESTDIR=/tmp/compiled_nginx_modules_dependencies_DISTDIR/
+make install
 
 # 2. Download https://github.com/corazawaf/coraza-nginx
 WORKDIR /usr/src/
@@ -55,7 +53,7 @@ RUN git clone --depth 1 -b v2.1-agentzh --single-branch https://github.com/openr
 
 WORKDIR /usr/src/luajit2
 
-RUN make -j$(nproc) && make install PREFIX=/tmp/compiled_nginx_modules_dependencies
+RUN make -j$(nproc) && make install
 
 # 2. Download https://github.com/vision5/ngx_devel_kit
 WORKDIR /usr/src/
@@ -87,11 +85,8 @@ WORKDIR /usr/src/lua-resty-lrucache
 RUN make install PREFIX=/opt/nginx
 
 # 5. Tell nginx's build system where to find LuaJIT 2.1 and more:
-ENV LUAJIT_LIB=/tmp/compiled_nginx_modules_dependencies/lib
-ENV LUAJIT_INC=/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1
-
-ENV CFLAGS="-I/tmp/compiled_nginx_modules_dependencies/include -I/tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local/include"
-ENV LDFLAGS="-L/tmp/compiled_nginx_modules_dependencies/lib"
+ENV LUAJIT_LIB=/usr/local/lib
+ENV LUAJIT_INC=/usr/local/include/luajit-2.1
 
 ### Download https://github.com/openresty/headers-more-nginx-module
 WORKDIR /usr/src/
@@ -119,32 +114,44 @@ make -j$(nproc) modules
 ### Download and Install crowdsec-nginx-bouncer and its dependency
 # 1. Download and Install https://github.com/ledgetech/lua-resty-http/
 
+WORKDIR /usr/src/
+
 RUN curl -fsSL https://api.github.com/repos/ledgetech/lua-resty-http/releases/latest |\
 jq -r '.tarball_url' |\
 wget -O __latest_lua-resty-http_releases.tar.gz -i - &&\
-mkdir -p /tmp/lua-resty-http &&\
-tar -xf __latest_lua-resty-http_releases.tar.gz  -C /tmp/lua-resty-http --strip-components=1
+mkdir -p /usr/src/lua-resty-http &&\
+tar -xf __latest_lua-resty-http_releases.tar.gz  -C /usr/src/lua-resty-http --strip-components=1
+
+WORKDIR /usr/src/lua-resty-http
+
+RUN make install PREFIX=/opt/nginx
 
 # 1.1 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/openresty/lua-resty-string
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-string /tmp/lua-resty-string
+RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-string /usr/src/lua-resty-string
+
+WORKDIR /usr/src/lua-resty-string
+
+RUN make install PREFIX=/opt/nginx
 
 # 1.2 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/fffonion/lua-resty-openssl
 
-RUN git clone --depth 1 --single-branch https://github.com/fffonion/lua-resty-openssl /tmp/lua-resty-openssl
+RUN git clone --depth 1 --single-branch https://github.com/fffonion/lua-resty-openssl /usr/src/lua-resty-openssl
+
+WORKDIR /usr/src/lua-resty-openssl
+
+RUN make install PREFIX=/opt/nginx
 
 # 2. Download and Compile https://github.com/mpx/lua-cjson
 
 RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-cjson/ /usr/src/lua-cjson
+
 WORKDIR /usr/src/lua-cjson
 # I can't just change the PREFIX because I will copy all the file to /usr/local in the production stage
 RUN make LUA_VERSION=5.1 \
-CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I/tmp/compiled_nginx_modules_dependencies/include/luajit-2.1" \
-LUA_INCLUDE_DIR=/tmp/compiled_nginx_modules_dependencies/include \
-LUA_CMODULE_DIR=/tmp/compiled_nginx_modules_dependencies/lib/lua/5.1 \
-LUA_MODULE_DIR=/tmp/compiled_nginx_modules_dependencies/share/lua/5.1 \
-LUA_BIN_DIR=/tmp/compiled_nginx_modules_dependencies/bin &&\
-make install PREFIX=/tmp/compiled_nginx_modules_dependencies
+CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I/usr/local/include/luajit-2.1" \
+PREFIX="/usr/local" &&\
+make install
 
 # 3. The crowdsec boucner
 
