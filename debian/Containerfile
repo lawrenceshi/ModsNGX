@@ -178,14 +178,12 @@ COPY --from=builder /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/module
 # Copy the dependency of the nginx nginx dynamic modules
 
 COPY --from=builder /opt/nginx/ /opt/nginx
-COPY --from=builder /tmp/compiled_nginx_modules_dependencies/ /usr/local/
-COPY --from=builder /tmp/compiled_nginx_modules_dependencies_DISTDIR/usr/local /usr/local
+COPY --from=builder /usr/local/lib/libcoraza.so /usr/local/lib/libcoraza.so
+COPY --from=builder /usr/local/lib/libluajit-5.1.so* /usr/local/lib/
 
 # Copy the crowdsec-nginx-bouncer's dependency
 
-COPY --from=builder /tmp/lua-resty-http/lib/resty/ /opt/nginx/lib/lua/resty/
-COPY --from=builder /tmp/lua-resty-string/lib/resty/ /opt/nginx/lib/lua/resty/
-COPY --from=builder /tmp/lua-resty-openssl/lib/resty/ /opt/nginx/lib/lua/resty/
+COPY --from=builder /usr/local/lib/lua/5.1/cjson.so /usr/local/lib/lua/5.1/cjson.so
 
 # Copy the crowdsec-nginx-bouncer
 # Refer to https://github.com/crowdsecurity/cs-nginx-bouncer/blob/main/install.sh
