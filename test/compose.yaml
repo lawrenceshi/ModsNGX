@@ -8,7 +8,9 @@ networks:
           gateway: 10.89.0.1
 services:
   nginx:
-    build: ../debian
+    # This could change depending on the base image used for testing.
+    # build: ../debian
+    build: ../alpine
     container_name: nginx
     restart: never
     ports:
