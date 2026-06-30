@@ -191,7 +191,7 @@ COPY --from=builder /usr/local/lib/lua/5.1/cjson.so /usr/local/lib/lua/5.1/cjson
 ARG LIB_PATH="/usr/local/lua/crowdsec/"
 ARG DATA_PATH="/var/lib/crowdsec/lua/"
 RUN mkdir -p ${LIB_PATH}/plugins/crowdsec/ &&\
-    mkdir -p ${DATA_PATH}/templates/
+mkdir -p ${DATA_PATH}/templates/
 COPY --from=builder /usr/src/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
 COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/lib ${LIB_PATH}
 COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/templates/ ${DATA_PATH}/templates/
