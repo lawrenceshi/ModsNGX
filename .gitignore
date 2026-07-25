@@ -219,3 +219,17 @@ __marimo__/
 
 # Add Note.md to prevent uploading my notes
 Note.md
+
+# Based on GitHub's VisualStudioCode.gitignore template (CC0)
+# https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore#
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+!*.code-workspace
+
+# Built Visual Studio Code Extensions
+*.vsix
