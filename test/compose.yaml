@@ -4,8 +4,8 @@ networks:
   test_net:
     ipam:
       config:
-        - subnet: 10.89.0.0/24
-          gateway: 10.89.0.1
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.10
 services:
   nginx:
     # This could change depending on the base image used for testing.
