@@ -8,9 +8,9 @@ networks:
           gateway: 10.10.10.10
 services:
   nginx:
-    # This could change depending on the base image used for testing.
-    # build: ../debian
-    build: ../alpine
+    # Change this path to test another base image.
+    # build: ../alpine
+    build: ../debian
     container_name: nginx
     restart: never
     ports:
