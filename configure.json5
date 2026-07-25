@@ -1,0 +1,23 @@
+// This is a Json5 file
+{
+    // This is the tag name.
+    "nginx_latest" : { 
+        "write_warning" : true,
+        "use_nginx_official_image" : true,
+        "write_base_image" : true,
+        // main_prefix = The prefix for Nginx, libcoraza, etc.
+        "main_prefix" : "/usr/local",
+        // The prefix for lua modules
+        "lua_module_prefix" : "/opt/nginx",
+        "builder_image" : "docker.io/library/nginx:mainline",
+        "builder_stage_name" : "builder",
+        "include_corazawaf" : true,
+        "corazawaf_version" : "latest",
+        "libcoraza_version" : "latest",
+        "include_lua" : true,
+        // v2.1-agentzh is the latest and default branch
+        "luajit_branch_name" : "v2.1-agentzh",
+        "ngx_devel_kit_version" : "latest"
+
+    },
+}
