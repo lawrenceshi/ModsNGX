@@ -1,16 +1,31 @@
 # Dockerfile or Containerfile, the name doesn't matter.
 # This dockerfile compiles the modules using the builder, and puts it in the production
 # The stage name should be lowercase according to StageNameCasing (https://docs.docker.com/reference/build-checks/stage-name-casing/).
-FROM docker.io/library/nginx:mainline AS builder
 
-# Step 1.
-# --- Compiling and Installing Coraza for NGINX Open Source ---
+ARG BASE_IMAGE=docker.io/library/nginx
+ARG BASE_IMAGE_TAG=mainline
 
-WORKDIR /usr/src/
+ARG BUILD_BASE_IMAGE=docker.io/library/nginx
+ARG BUILD_BASE_IMAGE_TAG=mainline
+
+ARG SOURCE_CODE_PATH=/usr/src
+ARG LUA_MODULE_PATH=/opt/nginx
+ARG COMPILED_INSTALL_PREFIX=/usr/local
+
+FROM ${BUILD_BASE_IMAGE}:${BUILD_BASE_IMAGE_TAG} AS builder
+
+ARG SOURCE_CODE_PATH
+ARG LUA_MODULE_PATH
+ARG COMPILED_INSTALL_PREFIX
+
+WORKDIR ${LUA_MODULE_PATH}/
+
+# The command is specifically designed for apt-get; dnf and others should work, but I never tested them.
+ARG PACKAGE_MANAGER=apt-get
 
 # Install the dependency
-RUN apt-get update && \
-apt-get install -y \
+RUN ${PACKAGE_MANAGER} update && \
+${PACKAGE_MANAGER} install -y \
 curl \
 jq \
 tar \
@@ -24,177 +39,207 @@ libtool \
 libpcre2-dev \
 zlib1g-dev \
 libssl-dev \
-ca-certificates
+ca-certificates && \
+${PACKAGE_MANAGER} clean
 
+
+# Step 1.
+# --- Compiling and Installing Coraza for NGINX Open Source ---
 ### 1. Download and build https://github.com/corazawaf/libcoraza
-RUN git clone --depth 1 --single-branch https://github.com/corazawaf/libcoraza.git /usr/src/libcoraza
-WORKDIR /usr/src/libcoraza
+ARG LIBCORAZA_BRANCH=main
+
+RUN git clone --depth 1 --single-branch --branch ${LIBCORAZA_BRANCH} https://github.com/corazawaf/libcoraza.git ${SOURCE_CODE_PATH}/libcoraza
+
+WORKDIR ${SOURCE_CODE_PATH}/libcoraza
+
 RUN ./build.sh &&\
-./configure --prefix=/usr/local &&\
+./configure --prefix=${COMPILED_INSTALL_PREFIX} &&\
 make -j$(nproc) &&\
 make install
 
 # 2. Download https://github.com/corazawaf/coraza-nginx
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
+ARG CORAZA_NGINX_BRANCH=main
 
-RUN curl -fsSL https://api.github.com/repos/corazawaf/coraza-nginx/releases/latest |\
-jq -r '.tarball_url' |\
-wget -O __latest_coraza-nginx_releases.tar.gz -i - &&\
-mkdir -p /usr/src/coraza-nginx &&\
-tar -xf __latest_coraza-nginx_releases.tar.gz  -C /usr/src/coraza-nginx/ --strip-components=1
+RUN git clone --depth 1 --single-branch --branch ${CORAZA_NGINX_BRANCH} https://github.com/corazawaf/coraza-nginx.git ${SOURCE_CODE_PATH}/coraza-nginx/
 
 ### Download and Compile the lua modules
 # Doc: https://github.com/openresty/lua-nginx-module#installation
-
-WORKDIR /usr/src/
-
+    
 # 1. Download and build https://github.com/openresty/luajit2
-RUN git clone --depth 1 -b v2.1-agentzh --single-branch https://github.com/openresty/luajit2.git /usr/src/luajit2 
+WORKDIR ${SOURCE_CODE_PATH}/
+ARG LUAJIT_BRANCH=v2.1-agentzh
 
-WORKDIR /usr/src/luajit2
+RUN git clone --depth 1 --branch ${LUAJIT_BRANCH} --single-branch https://github.com/openresty/luajit2.git ${SOURCE_CODE_PATH}/luajit2
+
+WORKDIR ${SOURCE_CODE_PATH}/luajit2
 
 RUN make -j$(nproc) && make install
 
 # 2. Download https://github.com/vision5/ngx_devel_kit
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
+ARG NGX_DEVEL_KIT_BRANCH=master
 
-RUN curl -fsSL https://api.github.com/repos/vision5/ngx_devel_kit/releases/latest |\
-jq -r '.tarball_url' |\
-wget -O __latest_ngx_devel_kit_releases.tar.gz -i - &&\
-mkdir -p /usr/src/ngx_devel_kit &&\
-tar -xf __latest_ngx_devel_kit_releases.tar.gz  -C /usr/src/ngx_devel_kit/ --strip-components=1
+RUN git clone --depth 1 --branch ${NGX_DEVEL_KIT_BRANCH} --single-branch https://github.com/vision5/ngx_devel_kit.git ${SOURCE_CODE_PATH}/ngx_devel_kit/
 
 # 3. Download https://github.com/openresty/lua-nginx-module
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
+ARG LUA_NGINX_MODULE_BRANCH=master
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-nginx-module.git /usr/src/lua-nginx-module/
+RUN git clone --depth 1 --branch ${LUA_NGINX_MODULE_BRANCH} --single-branch https://github.com/openresty/lua-nginx-module.git ${SOURCE_CODE_PATH}/lua-nginx-module/
 
 # 4. Download https://github.com/openresty/lua-resty-core and https://github.com/openresty/lua-resty-lrucache
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-core.git /usr/src/lua-resty-core
+ARG LUA_RESTY_CORE_BRANCH=master
 
-WORKDIR /usr/src/lua-resty-core
+RUN git clone --depth 1 --branch ${LUA_RESTY_CORE_BRANCH} --single-branch https://github.com/openresty/lua-resty-core.git ${SOURCE_CODE_PATH}/lua-resty-core
 
-RUN make install PREFIX=/opt/nginx
+WORKDIR ${SOURCE_CODE_PATH}/lua-resty-core
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-lrucache.git /usr/src/lua-resty-lrucache
+RUN make install PREFIX=${LUA_MODULE_PATH}
 
-WORKDIR /usr/src/lua-resty-lrucache
+ARG LUA_RESTY_LRUCACHE_BRANCH=master
 
-RUN make install PREFIX=/opt/nginx
+RUN git clone --depth 1 --branch ${LUA_RESTY_LRUCACHE_BRANCH} --single-branch https://github.com/openresty/lua-resty-lrucache.git ${SOURCE_CODE_PATH}/lua-resty-lrucache
+
+WORKDIR ${SOURCE_CODE_PATH}/lua-resty-lrucache
+
+RUN make install PREFIX=${LUA_MODULE_PATH}
 
 # 5. Tell nginx's build system where to find LuaJIT 2.1 and more:
-ENV LUAJIT_LIB=/usr/local/lib
-ENV LUAJIT_INC=/usr/local/include/luajit-2.1
+ARG LUAJIT_LIB=${COMPILED_INSTALL_PREFIX}/lib
+ARG LUAJIT_INC=${COMPILED_INSTALL_PREFIX}/include/luajit-2.1
 
 ### Download https://github.com/openresty/headers-more-nginx-module
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/headers-more-nginx-module.git /usr/src/headers-more-nginx-module
+ARG HEADERS_MORE_NGINX_MODULE_BRANCH=master
+
+RUN git clone --depth 1 --branch ${HEADERS_MORE_NGINX_MODULE_BRANCH} --single-branch https://github.com/openresty/headers-more-nginx-module.git ${SOURCE_CODE_PATH}/headers-more-nginx-module
 
 ### Download Nginx and build the modules
-WORKDIR /usr/src/
-RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -O __my_nginx_releases.tar.gz &&\
-mkdir -p /usr/src/nginx/ &&\
-tar -xf __my_nginx_releases.tar.gz -C /usr/src/nginx/ --strip-components=1
+WORKDIR ${SOURCE_CODE_PATH}/
 
-WORKDIR /usr/src/nginx
+## Handle Nginx Version ARG
+# Default Nginx mainline version.
+# Update periodically to keep dependencies current.
+ARG DEFAULT_NGINX_VERSION=1.31.3
 
-RUN ./configure --with-compat \
---prefix=/usr/local \
+RUN if [ -z "${NGINX_VERSION}" ]; then \
+NGINX_VERSION=${DEFAULT_NGINX_VERSION}; \
+fi && \
+wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -O __my_nginx_releases.tar.gz &&\
+mkdir -p ${SOURCE_CODE_PATH}/nginx/ &&\
+tar -xf __my_nginx_releases.tar.gz -C ${SOURCE_CODE_PATH}/nginx/ --strip-components=1
+
+WORKDIR ${SOURCE_CODE_PATH}/nginx
+
 # Crowdsec needs this to enable lua_ssl_trusted_certificate and others
---with-http_ssl_module \
---add-dynamic-module=/usr/src/coraza-nginx/ \
---add-dynamic-module=/usr/src/ngx_devel_kit/ \
---add-dynamic-module=/usr/src/lua-nginx-module/ \
---add-dynamic-module=/usr/src/headers-more-nginx-module/ &&\
-make -j$(nproc) modules
+ARG CONFIGURE_FLAGS="--with-compat --with-http_ssl_module"
+ARG NGINX_MODULE_OPTION="-dynamic"
+ARG NGINX_MAKE_OPTION="modules"
+ARG NGINX_CORAZA_MODULE_CHOICE="--add"${NGINX_MODULE_OPTION}"-module="${SOURCE_CODE_PATH}"/coraza-nginx/"
+# These are dependencies, so they are grouped under the same ARG.
+ARG NGINX_LUA_MODULE_CHOICE="--add"${NGINX_MODULE_OPTION}"-module="${SOURCE_CODE_PATH}"/ngx_devel_kit/ --add"${NGINX_MODULE_OPTION}"-module="${SOURCE_CODE_PATH}"/lua-nginx-module/"
+ARG NGINX_HEADERS_MORE_NGINX_MODULE_CHOICE="--add"${NGINX_MODULE_OPTION}"-module="${SOURCE_CODE_PATH}"/headers-more-nginx-module/"
+
+RUN ./configure ${CONFIGURE_FLAGS} \
+--prefix=${COMPILED_INSTALL_PREFIX} \
+${NGINX_CORAZA_MODULE_CHOICE} \
+${NGINX_LUA_MODULE_CHOICE} \
+${NGINX_HEADERS_MORE_NGINX_MODULE_CHOICE} &&\
+make -j$(nproc) ${NGINX_MAKE_OPTION}
 
 ### Download and Install crowdsec-nginx-bouncer and its dependency
 # 1. Download and Install https://github.com/ledgetech/lua-resty-http/
 
-WORKDIR /usr/src/
+WORKDIR ${SOURCE_CODE_PATH}/
+ARG LUA_RESTY_HTTP_BRANCH=master
 
-RUN curl -fsSL https://api.github.com/repos/ledgetech/lua-resty-http/releases/latest |\
-jq -r '.tarball_url' |\
-wget -O __latest_lua-resty-http_releases.tar.gz -i - &&\
-mkdir -p /usr/src/lua-resty-http &&\
-tar -xf __latest_lua-resty-http_releases.tar.gz  -C /usr/src/lua-resty-http --strip-components=1
+RUN git clone --depth 1 --branch ${LUA_RESTY_HTTP_BRANCH} --single-branch https://github.com/ledgetech/lua-resty-http.git ${SOURCE_CODE_PATH}/lua-resty-http
 
-WORKDIR /usr/src/lua-resty-http
+WORKDIR ${SOURCE_CODE_PATH}/lua-resty-http
 
-RUN make install PREFIX=/opt/nginx
+RUN make install PREFIX=${LUA_MODULE_PATH}
 
 # 1.1 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/openresty/lua-resty-string
+ARG LUA_RESTY_STRING_BRANCH=master
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-resty-string /usr/src/lua-resty-string
+RUN git clone --depth 1 --branch ${LUA_RESTY_STRING_BRANCH} --single-branch https://github.com/openresty/lua-resty-string.git ${SOURCE_CODE_PATH}/lua-resty-string
 
-WORKDIR /usr/src/lua-resty-string
+WORKDIR ${SOURCE_CODE_PATH}/lua-resty-string
 
-RUN make install PREFIX=/opt/nginx
+RUN make install PREFIX=${LUA_MODULE_PATH}
 
 # 1.2 Download and Install https://github.com/ledgetech/lua-resty-http/'s dependency https://github.com/fffonion/lua-resty-openssl
+ARG LUA_RESTY_OPENSSL_BRANCH=master
 
-RUN git clone --depth 1 --single-branch https://github.com/fffonion/lua-resty-openssl /usr/src/lua-resty-openssl
+RUN git clone --depth 1 --branch ${LUA_RESTY_OPENSSL_BRANCH} --single-branch https://github.com/fffonion/lua-resty-openssl.git ${SOURCE_CODE_PATH}/lua-resty-openssl
 
-WORKDIR /usr/src/lua-resty-openssl
+WORKDIR ${SOURCE_CODE_PATH}/lua-resty-openssl
 
-RUN make install PREFIX=/opt/nginx
+RUN make install PREFIX=${LUA_MODULE_PATH}
 
-# 2. Download and Compile https://github.com/mpx/lua-cjson
+# 2. Download and Compile https://github.com/mpx/lua-cjson, but using the https://github.com/openresty/lua-cjson/ fork
+ARG LUA_CJSON_BRANCH=master
+RUN git clone --depth 1 --branch ${LUA_CJSON_BRANCH} --single-branch https://github.com/openresty/lua-cjson.git ${SOURCE_CODE_PATH}/lua-cjson
 
-RUN git clone --depth 1 --single-branch https://github.com/openresty/lua-cjson/ /usr/src/lua-cjson
-
-WORKDIR /usr/src/lua-cjson
-# I can't just change the PREFIX because I will copy all the file to /usr/local in the production stage
+WORKDIR ${SOURCE_CODE_PATH}/lua-cjson
+# I can't just change the PREFIX because I will copy all the file to ${COMPILED_INSTALL_PREFIX} in the production stage
 RUN make LUA_VERSION=5.1 \
-CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I/usr/local/include/luajit-2.1" \
-PREFIX="/usr/local" &&\
+CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I"${COMPILED_INSTALL_PREFIX}"/include/luajit-2.1" \
+PREFIX=${COMPILED_INSTALL_PREFIX} &&\
 make install
 
 # 3. The crowdsec boucner
+ARG CS_NGINX_BOUNCER_VERSION=latest
 
-RUN curl -fsSL https://api.github.com/repos/crowdsecurity/cs-nginx-bouncer/releases/latest |\
+RUN curl -fsSL https://api.github.com/repos/crowdsecurity/cs-nginx-bouncer/releases/${CS_NGINX_BOUNCER_VERSION} |\
 jq -r '.assets[0].browser_download_url' |\
 wget -O __latest_cs-nginx-bouncer_releases.tar.gz -i - &&\
 mkdir -p /usr/src/cs-nginx-bouncer &&\
 tar -xf __latest_cs-nginx-bouncer_releases.tar.gz  -C /usr/src/cs-nginx-bouncer/ --strip-components=1
 
 # Remove the lua_package_path because we will declaration the modules in nginx.conf, else error: nginx: [emerg] "lua_package_path" directive is duplicate in /etc/nginx/nginx.conf:38
-RUN sed -i "/^lua_package_path/d" /usr/src/cs-nginx-bouncer/nginx/crowdsec_nginx.conf
+RUN sed -i "/^lua_package_path/d" ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf
 
 ### Copy the compiled files
 
-FROM docker.io/library/nginx:mainline AS production
+FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG} AS production
+
+ARG SOURCE_CODE_PATH
+ARG LUA_MODULE_PATH
+ARG COMPILED_INSTALL_PREFIX
+
 
 # Copy the nginx dynamic modules (.so) files
 
-COPY --from=builder /usr/src/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
-COPY --from=builder /usr/src/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
-COPY --from=builder /usr/src/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
-COPY --from=builder /usr/src/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ndk_http_module.so /etc/nginx/modules/ndk_http_module.so
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_coraza_module.so /etc/nginx/modules/ngx_http_coraza_module.so
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules/ngx_http_headers_more_filter_module.so
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_lua_module.so /etc/nginx/modules/ngx_http_lua_module.so
 
 # Copy the dependency of the nginx nginx dynamic modules
 
-COPY --from=builder /opt/nginx/ /opt/nginx
-COPY --from=builder /usr/local/lib/libcoraza.so /usr/local/lib/libcoraza.so
-COPY --from=builder /usr/local/lib/libluajit-5.1.so* /usr/local/lib/
+COPY --from=builder ${LUA_MODULE_PATH}/ ${LUA_MODULE_PATH}/
+COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/libcoraza.so ${COMPILED_INSTALL_PREFIX}/lib/libcoraza.so
+COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/libluajit-5.1.so* ${COMPILED_INSTALL_PREFIX}/lib/
 
 # Copy the crowdsec-nginx-bouncer's dependency
 
-COPY --from=builder /usr/local/lib/lua/5.1/cjson.so /usr/local/lib/lua/5.1/cjson.so
+COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/lua/5.1/cjson.so ${COMPILED_INSTALL_PREFIX}/lib/lua/5.1/cjson.so
 
 # Copy the crowdsec-nginx-bouncer
 # Refer to https://github.com/crowdsecurity/cs-nginx-bouncer/blob/main/install.sh
 # The user should handle /etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf file on there own in the crowdsec image.
-ARG LIB_PATH="/usr/local/lua/crowdsec/"
+ARG LIB_PATH=${COMPILED_INSTALL_PREFIX}"/lua/crowdsec/"
 ARG DATA_PATH="/var/lib/crowdsec/lua/"
 RUN mkdir -p ${LIB_PATH}/plugins/crowdsec/ &&\
 mkdir -p ${DATA_PATH}/templates/
-COPY --from=builder /usr/src/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
-COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/lib ${LIB_PATH}
-COPY --from=builder /usr/src/cs-nginx-bouncer/lua-mod/templates/ ${DATA_PATH}/templates/
+COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
+COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${LIB_PATH}
+COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${DATA_PATH}/templates/
 
 # Copy the ca-certificates because crowdsec needs it.
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
