@@ -37,6 +37,7 @@ services:
       - ./profiles.yaml:/etc/crowdsec/profiles.yaml:Z,ro
     environment:
       - CROWDSEC_BYPASS_DB_VOLUME_CHECK=true
+      # This is truly NOT safe for production!!! This is a SUPER WEAK API key and is ONLY for TESTING purposes.
       - BOUNCER_KEY_nginx_bouncer="key"
     networks:
       - test_net
