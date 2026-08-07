@@ -953,7 +953,8 @@ case "${IF_LUA_CJSON}" in
 
     cd "${SOURCE_CODE_PATH}/lua-cjson/"
 
-    make LUA_VERSION=${LUA_VERSION} \
+    make -j"$(nproc)" \
+    LUA_VERSION=${LUA_VERSION} \
     CFLASGS="-O3 -Wall -pedantic -DNDEBUG -I"${COMPILED_INSTALL_PREFIX}"/include/luajit-2.1" \
     PREFIX="${COMPILED_INSTALL_PREFIX}"
 
@@ -1032,7 +1033,7 @@ case "${IF_LIBMAXMINDDB}" in
 
     ./bootstrap
     ./configure --prefix="${COMPILED_INSTALL_PREFIX}"
-    make
+    make -j"$(nproc)"
     make check
     make install
 
@@ -1262,6 +1263,107 @@ case "${IF_NGX_BROTLI}" in
 
     *)
     if_invalid_notice "IF_NGX_BROTLI"
+    ;;
+esac
+
+#### Download, Compile and Install NGINX
+# ARG IF_NGINX=true
+# ARG DEFAULT_NGINX_VERSION=1.31.3
+# ARG LUAJIT_LIB=${COMPILED_INSTALL_PREFIX}/lib
+# ARG LUAJIT_INC=${COMPILED_INSTALL_PREFIX}/include/luajit-2.1
+# ARG FORCE_NGINX_VERSION=""
+# ARG CONFIGURE_FLAGS="--prefix=${NGINX_PREFIX} --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/run/nginx.pid --lock-path=/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_v3_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt='-g -O2 -Werror=implicit-function-declaration -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wp,-D_FORTIFY_SOURCE=2 -fPIC' --with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie"
+# ARG NGINX_MODULE_OPTION="-dynamic"
+# ARG NGINX_MAKE_OPTION="modules"
+
+case "${IF_NGINX}" in 
+    "true"|"True")
+
+    if [ -n "${FORCE_NGINX_VERSION}" ]; then
+        export NGINX_VERSION="${FORCE_NGINX_VERSION}"
+    elif [ -z "${NGINX_VERSION}" ]; then
+        export NGINX_VERSION="${DEFAULT_NGINX_VERSION}"
+    fi
+
+    curl -LSo "${SOURCE_CODE_PATH}/__nginx_${NGINX_VERSION}.tar.gz" "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
+    mkdir -p "${SOURCE_CODE_PATH}/Nginx"
+    tar -xf "${SOURCE_CODE_PATH}/__nginx_${NGINX_VERSION}.tar.gz" -C "${SOURCE_CODE_PATH}/Nginx" --strip-components=1
+    
+    cd "${SOURCE_CODE_PATH}/Nginx"
+
+    case "${IF_CORAZA}" in
+        "true"|"True")
+        export INTERNAL_CORAZA_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/coraza-nginx"
+        ;;
+    esac
+
+    case "${IF_NGX_DEVEL_KIT}" in
+        "true"|"True")
+        export INTERNAL_NGX_DEVEL_KIT_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_devel_kit/"
+    esac
+
+    case "${IF_LUA_NGINX_MODULE}" in 
+        "true"|"True")
+        export INTERNAL_LUA_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/lua-nginx-module"
+    esac
+
+    case "${IF_NGX_HTTP_GEOIP2_MODULE}" in
+        "true"|"True")
+        export INTERNAL_NGX_HTTP_GEOIP2_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_http_geoip2_module"
+    esac
+
+    case "${IF_NGX_FANCYINDEX}" in
+        "true"|"True")
+        export INTERNAL_NGX_FANCYINDEX_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx-fancyindex"
+    esac
+
+    case "${IF_NJS}" in
+        "true"|"True")
+        export INTERNAL_NJS_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/njs/nginx"
+    esac
+
+    case "${IF_HEADERS_MORE_NGINX_MODULE}" in
+        "true"|"True")
+        export INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/headers-more-nginx-module"
+    esac
+
+    case "${IF_NGINX_RTMP_MODULE}" in
+        "true"|"True")
+        export INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/nginx-rtmp-module"
+    esac
+
+    case "${IF_ZSTD_NGINX_MODULE}" in
+        "true"|"True")
+        export INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/zstd-nginx-module"
+    esac
+
+    case "${IF_NGX_BROTLI}" in
+        "true"|"True")
+        export INTERNAL_NGX_BROTLI_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_brotli"
+    esac
+
+    ./configure "${CONFIGURE_FLAGS}" \
+    "${INTERNAL_CORAZA_CONFIG_COMMAND}" \
+    "${INTERNAL_NGX_DEVEL_KIT_CONFIG_COMMAND}" \
+    "${INTERNAL_LUA_NGINX_MODULE_CONFIG_COMMAND}" \
+    "${INTERNAL_NGX_HTTP_GEOIP2_MODULE_CONFIG_COMMAND}" \
+    "${INTERNAL_NGX_FANCYINDEX_CONFIG_COMMAND}" \
+    "${INTERNAL_NJS_CONFIG_COMMAND}" \
+    "${INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND}" \
+    "${INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND}" \
+    "${INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND}" \
+    "${INTERNAL_NGX_BROTLI_CONFIG_COMMAND}"
+
+    make -j"$(nproc)" ${NGINX_MAKE_OPTION}
+
+    make install
+    
+    ;;
+    "false"|"False")
+    print_warning "You have chosen not to compile Nginx. Please make sure this is intentional."
+    ;;
+    *)
+    if_invalid_notice "IF_NGINX"
     ;;
 esac
 
