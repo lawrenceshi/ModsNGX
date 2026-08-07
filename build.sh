@@ -155,6 +155,7 @@ case "${PACKAGE_MANAGER}" in
     libyajl-dev \
     pkgconf \
     zlib1g-dev \
+    libzstd-dev  \
     ca-certificates # \
     # wget \
     ;;
@@ -188,6 +189,7 @@ case "${PACKAGE_MANAGER}" in
     autoconf \
     m4 \
     automake \
+    zstd-dev \
     ca-certificates #\
     # bash \
     # wget
@@ -220,6 +222,7 @@ case "${PACKAGE_MANAGER}" in
     yajl-devel \
     pkgconf \
     zlib-devel \
+    libzstd-devel \
     ca-certificates # \
     # wget \
     ;;
@@ -253,6 +256,7 @@ case "${PACKAGE_MANAGER}" in
     libxml2-dev \
     libyajl-dev \
     pkgconf \
+    libzstd-dev \
     ca-certificates #\
     # wget \
     ;;
@@ -1154,7 +1158,77 @@ case "${IF_HEADERS_MORE_NGINX_MODULE}" in
     ;;
 esac
 
+# Download https://github.com/arut/nginx-rtmp-module
+# ARG IF_NGINX_RTMP_MODULE=true
+# ARG NGINX_RTMP_MODULE_BRANCH=master
 
+case "${IF_NGINX_RTMP_MODULE}" in 
+    "true"|"True")
+
+    case "${NGINX_RTMP_MODULE_BRANCH}" in 
+        "")
+        branch_empty_notice "NGINX_RTMP_MODULE_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export NGINX_RTMP_MODULE_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${NGINX_RTMP_MODULE_BRANCH}" "https://${GITHUB_URL}/arut/nginx-rtmp-module.git" "nginx-rtmp-module"
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_NGINX_RTMP_MODULE"
+    ;;
+esac
+
+# Download https://github.com/tokers/zstd-nginx-module
+# ARG IF_ZSTD_NGINX_MODULE=true
+# ARG ZSTD_NGINX_MODULE_BRANCH=master
+
+case "${IF_ZSTD_NGINX_MODULE}" in 
+    "true"|"True")
+
+    case "${ZSTD_NGINX_MODULE_BRANCH}" in 
+        "")
+        branch_empty_notice "ZSTD_NGINX_MODULE_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export ZSTD_NGINX_MODULE_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${ZSTD_NGINX_MODULE_BRANCH}" "https://${GITHUB_URL}/tokers/zstd-nginx-module.git" "zstd-nginx-module"
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_ZSTD_NGINX_MODULE"
+    ;;
+esac
 
 # Clean up
 # ARG IF_CLEANUP=true
@@ -1186,6 +1260,7 @@ case "${IF_CLEANUP}" in
         libxml2-dev \
         libyajl-dev \
         pkgconf \
+        libzstd-dev \
         ca-certificates #\
         # wget \
         rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list
@@ -1213,6 +1288,7 @@ case "${IF_CLEANUP}" in
         pcre-devel \
         yajl-devel \
         zlib-devel \
+        libzstd-devel \
         pcre2-devel #\
         # wget \
         "${PACKAGE_MANAGER}" clean all
@@ -1247,6 +1323,7 @@ case "${IF_CLEANUP}" in
         libpcre++-dev \
         libxml2-dev \
         libyajl-dev \
+        libzstd-dev \
         pkgconf \
         ca-certificates #\
         # wget \
