@@ -538,6 +538,47 @@ case "${IF_LUA_RESTY_LRUCACHE}" in
 
 esac
 
+# Download https://github.com/openresty/lua-resty-lock
+# ARG IF_LUA_RESTY_LOCK=true
+# ARG LUA_RESTY_LOCK_BRANCH=master
+
+cd "${SOURCE_CODE_PATH}/"
+
+case "${IF_LUA_RESTY_LOCK}" in 
+    "true"|"True")
+    case "${LUA_RESTY_LOCK_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_LOCK_BRANCH"
+        ;;
+        
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_LOCK_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_LOCK_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-lock.git" "lua-resty-lock"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-lock"
+    
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_LOCK"
+
+esac
+
+
 cd "${SOURCE_CODE_PATH}/"
 
 # Download https://github.com/openresty/headers-more-nginx-module
