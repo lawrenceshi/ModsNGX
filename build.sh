@@ -873,8 +873,8 @@ case "${IF_LUA_RESTY_SESSION}" in
 
     cd "${SOURCE_CODE_PATH}/lua-resty-session"
 
-    mkdir -p ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/
-    cp -r lib/resty/session/* ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/
+    mkdir -p "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/"
+    cp -r lib/resty/session/* "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/"
 
     ;;
 
@@ -913,8 +913,8 @@ case "${IF_LUA_RESTY_JWT}" in
 
     cd "${SOURCE_CODE_PATH}/lua-resty-jwt"
 
-    mkdir -p ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/
-    cp -r lib/resty/* ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/
+    mkdir -p "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/"
+    cp -r lib/resty/* "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/"
 
     ;;
 
@@ -954,8 +954,8 @@ case "${IF_LUA_CJSON}" in
     cd "${SOURCE_CODE_PATH}/lua-cjson/"
 
     make -j"$(nproc)" \
-    LUA_VERSION=${LUA_VERSION} \
-    CFLASGS="-O3 -Wall -pedantic -DNDEBUG -I"${COMPILED_INSTALL_PREFIX}"/include/luajit-2.1" \
+    LUA_VERSION="${LUA_VERSION}" \
+    CFLAGS="-O3 -Wall -pedantic -DNDEBUG -I ${COMPILED_INSTALL_PREFIX}/include/luajit-2.1" \
     PREFIX="${COMPILED_INSTALL_PREFIX}"
 
     make install
@@ -1354,7 +1354,7 @@ case "${IF_NGINX}" in
     "${INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND}" \
     "${INTERNAL_NGX_BROTLI_CONFIG_COMMAND}"
 
-    make -j"$(nproc)" ${NGINX_MAKE_OPTION}
+    make -j"$(nproc)" "${NGINX_MAKE_OPTION}"
 
     make install
     
