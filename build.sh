@@ -1079,6 +1079,42 @@ case "${IF_NGX_FANCYINDEX}" in
     ;;
 esac
 
+# Download https://github.com/nginx/njs
+# ARG IF_NJS=true
+# ARG NJS_BRANCH=master
+
+case "${IF_NJS}" in 
+    "true"|"True")
+
+    case "${NJS_BRANCH}" in 
+        "")
+        branch_empty_notice "NJS_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export NJS_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${NJS_BRANCH}" "https://${GITHUB_URL}/nginx/njs.git" "njs"
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_NJS"
+    ;;
+esac
+
 
 # Download https://github.com/openresty/headers-more-nginx-module
 # ARG IF_HEADERS_MORE_NGINX_MODULE=true
