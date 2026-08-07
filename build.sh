@@ -844,7 +844,127 @@ case "${IF_LUA_RESTY_OPENSSL}" in
 
 esac
 
+# Download https://github.com/bungle/lua-resty-session
+# ARG IF_LUA_RESTY_SESSION=true
+# ARG LUA_RESTY_SESSION_BRANCH=master
+
+case "${IF_LUA_RESTY_SESSION}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_SESSION_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_SESSION_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_SESSION_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_SESSION_BRANCH}" "https://${GITHUB_URL}/bungle/lua-resty-session.git" "lua-resty-session"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-session"
+
+    mkdir -p ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/
+    cp -r lib/resty/session/* ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_SESSION"
+    ;;
+
+esac
+
+# Download https://github.com/bungle/lua-resty-jwt
+# ARG IF_LUA_RESTY_JWT=true
+# ARG LUA_RESTY_JWT_BRANCH=master
+
+case "${IF_LUA_RESTY_JWT}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_JWT_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_JWT_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_JWT_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_JWT_BRANCH}" "https://${GITHUB_URL}/bungle/lua-resty-jwt.git" "lua-resty-jwt"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-jwt"
+
+    mkdir -p ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/
+    cp -r lib/resty/* ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_JWT"
+    ;;
+
+esac
+
 # Download and Compile https://github.com/mpx/lua-cjson, but using the https://github.com/openresty/lua-cjson/ fork
+# ARG IF_LUA_CJSON=true
+# ARG LUA_CJSON_BRANCH=master
+cd "${SOURCE_CODE_PATH}/"
+
+case "${IF_LUA_CJSON}" in 
+    "true"|"True")
+    case "${LUA_CJSON_BRANCH}" in 
+        "")
+        branch_empty_notice "LUA_CJSON_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_CJSON_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_CJSON_BRANCH}" "https://${GITHUB_URL}/openresty/lua-cjson.git" "lua-cjson"
+
+    cd "${SOURCE_CODE_PATH}/lua-cjson/"
+
+    make LUA_VERSION=${LUA_VERSION} \
+    CFLASGS="-O3 -Wall -pedantic -DNDEBUG -I"${COMPILED_INSTALL_PREFIX}"/include/luajit-2.1" \
+    PREFIX="${COMPILED_INSTALL_PREFIX}"
+
+    make install
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_CJSON"
+    ;;
+esac
 
 
 
