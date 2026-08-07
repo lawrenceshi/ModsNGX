@@ -966,6 +966,82 @@ case "${IF_LUA_CJSON}" in
     ;;
 esac
 
+# Download https://github.com/leev/ngx_http_geoip2_module
+# ARG IF_NGX_HTTP_GEOIP2_MODULE=true
+# ARG NGX_HTTP_GEOIP2_MODULE_BRANCH=master
+cd "${SOURCE_CODE_PATH}/"
+case "${IF_NGX_HTTP_GEOIP2_MODULE}" in 
+    "true"|"True")
+    case "${NGX_HTTP_GEOIP2_MODULE_BRANCH}" in 
+        "")
+        branch_empty_notice "NGX_HTTP_GEOIP2_MODULE_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export NGX_HTTP_GEOIP2_MODULE_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${NGX_HTTP_GEOIP2_MODULE_BRANCH}" "https://${GITHUB_URL}/leev/ngx_http_geoip2_module.git" "ngx_http_geoip2_module"
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_NGX_HTTP_GEOIP2_MODULE"
+    ;;
+esac
+
+
+# Download and Compile https://github.com/maxmind/libmaxminddb
+# ARG IF_LIBMAXMINDDB=true
+# ARG LIBMAXMINDDB_VERSION=master
+
+cd "${SOURCE_CODE_PATH}/"
+
+case "${IF_LIBMAXMINDDB}" in 
+    "true"|"True")
+    case "${LIBMAXMINDDB_VERSION}" in 
+        "")
+        branch_empty_notice "LIBMAXMINDDB_VERSION"
+        ;;
+        "master"|"main"|"default")
+        # Rewrite non-standard branch name
+        export LIBMAXMINDDB_VERSION=latest
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    get_releases "maxmind/libmaxminddb" "${LIBMAXMINDDB_VERSION}" "libmaxminddb"
+
+    cd "${SOURCE_CODE_PATH}/libmaxminddb/"
+
+    ./bootstrap
+    ./configure --prefix="${COMPILED_INSTALL_PREFIX}"
+    make
+    make check
+    make install
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LIBMAXMINDDB"
+    ;;
+esac
 
 
 cd "${SOURCE_CODE_PATH}/"
@@ -1123,6 +1199,8 @@ case "${IF_CLEANUP}" in
     ;;
 
 esac
+
+sudo ldconfig
 
 # ARG CUSTOM_EXIT_CMD=":"
 
