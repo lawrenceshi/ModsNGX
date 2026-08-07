@@ -1043,13 +1043,48 @@ case "${IF_LIBMAXMINDDB}" in
     ;;
 esac
 
+# Download https://github.com/aperezdc/ngx-fancyindex
+# ARG IF_NGX_FANCYINDEX=true
+# ARG NGX_FANCYINDEX_BRANCH=master
 
-cd "${SOURCE_CODE_PATH}/"
+case "${IF_NGX_FANCYINDEX}" in 
+    "true"|"True")
+
+    case "${NGX_FANCYINDEX_BRANCH}" in 
+        "")
+        branch_empty_notice "NGX_FANCYINDEX_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export NGX_FANCYINDEX_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${NGX_FANCYINDEX_BRANCH}" "https://${GITHUB_URL}/aperezdc/ngx-fancyindex.git" "ngx-fancyindex"
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_NGX_FANCYINDEX"
+    ;;
+esac
+
 
 # Download https://github.com/openresty/headers-more-nginx-module
 # ARG IF_HEADERS_MORE_NGINX_MODULE=true
 # ARG HEADERS_MORE_NGINX_MODULE_BRANCH=master
 
+cd "${SOURCE_CODE_PATH}/"
 
 case "${IF_HEADERS_MORE_NGINX_MODULE}" in 
     "true"|"True")
