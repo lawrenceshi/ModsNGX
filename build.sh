@@ -578,6 +578,275 @@ case "${IF_LUA_RESTY_LOCK}" in
 
 esac
 
+# Download https://github.com/openresty/lua-resty-limit-traffic
+# ARG IF_LUA_RESTY_LIMIT_TRAFFIC=true
+# ARG LUA_RESTY_LIMIT_TRAFFIC_BRANCH=master
+
+case "${IF_LUA_RESTY_LIMIT_TRAFFIC}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_LIMIT_TRAFFIC_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_LIMIT_TRAFFIC_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_LIMIT_TRAFFIC_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_LIMIT_TRAFFIC_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-limit-traffic.git" "lua-resty-limit-traffic"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-limit-traffic"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_LIMIT_TRAFFIC"
+    ;;
+
+esac
+
+# Download https://github.com/openresty/lua-resty-redis
+# ARG IF_LUA_RESTY_REDIS=true
+# ARG LUA_RESTY_REDIS_BRANCH=master
+
+case "${IF_LUA_RESTY_REDIS}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_REDIS_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_REDIS_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_REDIS_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_REDIS_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-redis.git" "lua-resty-redis"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-redis"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_REDIS"
+    ;;
+
+esac
+
+# Download https://github.com/cloudflare/lua-resty-cookie
+# ARG IF_LUA_RESTY_COOKIE=true
+# ARG LUA_RESTY_COOKIE_BRANCH=master
+
+case "${IF_LUA_RESTY_COOKIE}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_COOKIE_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_COOKIE_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_COOKIE_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_COOKIE_BRANCH}" "https://${GITHUB_URL}/cloudflare/lua-resty-cookie.git" "lua-resty-cookie"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-cookie"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_COOKIE"
+    ;;
+
+esac
+
+# Download https://github.com/openresty/lua-resty-upstream-healthcheck
+# ARG IF_LUA_RESTY_UPSTREAM_HEALTHCHECK=true
+# ARG LUA_RESTY_UPSTREAM_HEALTHCHECK_BRANCH=master
+
+case "${IF_LUA_RESTY_UPSTREAM_HEALTHCHECK}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_UPSTREAM_HEALTHCHECK_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_UPSTREAM_HEALTHCHECK_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_UPSTREAM_HEALTHCHECK_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_UPSTREAM_HEALTHCHECK_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-upstream-healthcheck.git" "lua-resty-upstream-healthcheck"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-upstream-healthcheck"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_UPSTREAM_HEALTHCHECK"
+    ;;
+
+esac
+
+# Download https://github.com/ledgetech/lua-resty-http/
+# ARG IF_LUA_RESTY_HTTP=true
+# ARG LUA_RESTY_HTTP_BRANCH=master
+
+case "${IF_LUA_RESTY_HTTP}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_HTTP_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_HTTP_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_HTTP_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_HTTP_BRANCH}" "https://${GITHUB_URL}/ledgetech/lua-resty-http.git" "lua-resty-http"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-http"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_HTTP"
+    ;;
+
+esac
+
+# Download https://github.com/openresty/lua-resty-string
+# ARG IF_LUA_RESTY_STRING=true
+# ARG LUA_RESTY_STRING_BRANCH=master
+
+case "${IF_LUA_RESTY_STRING}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_STRING_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_STRING_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_STRING_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_STRING_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-string.git" "lua-resty-string"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-string"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_STRING"
+    ;;
+
+esac
+
+# Download https://github.com/fffonion/lua-resty-openssl
+# ARG IF_LUA_RESTY_OPENSSL=true
+# ARG LUA_RESTY_OPENSSL_BRANCH=master
+
+case "${IF_LUA_RESTY_OPENSSL}" in
+    "true"|"True")
+
+    case "${LUA_RESTY_OPENSSL_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_RESTY_OPENSSL_BRANCH"
+        ;;
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_RESTY_OPENSSL_BRANCH=master
+        ;;
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_RESTY_OPENSSL_BRANCH}" "https://${GITHUB_URL}/fffonion/lua-resty-openssl.git" "lua-resty-openssl"
+
+    cd "${SOURCE_CODE_PATH}/lua-resty-openssl"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_RESTY_OPENSSL"
+    ;;
+
+esac
+
+# Download and Compile https://github.com/mpx/lua-cjson, but using the https://github.com/openresty/lua-cjson/ fork
+
+
 
 cd "${SOURCE_CODE_PATH}/"
 
