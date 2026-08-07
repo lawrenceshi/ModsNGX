@@ -117,6 +117,9 @@ ARG NGINX_RTMP_MODULE_BRANCH=master
 ARG IF_ZSTD_NGINX_MODULE=true
 ARG ZSTD_NGINX_MODULE_BRANCH=master
 
+ARG IF_NGX_BROTLI=true
+ARG NGX_BROTLI_BRANCH=master
+
 ADD --chmod=0755 ./build.sh /build.sh
 
 RUN /build.sh

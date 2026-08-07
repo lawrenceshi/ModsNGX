@@ -410,7 +410,7 @@ case "${IF_NGX_DEVEL_KIT}" in
         ;;
 
         *)
-        # Keep user-provided branch
+        # Keep user-provided branchhttps://github.com/google/ngx_brotli
         :
         ;;
 
@@ -1229,6 +1229,42 @@ case "${IF_ZSTD_NGINX_MODULE}" in
     if_invalid_notice "IF_ZSTD_NGINX_MODULE"
     ;;
 esac
+
+# Download https://github.com/google/ngx_brotli
+# ARG IF_NGX_BROTLI=true
+# ARG NGX_BROTLI_BRANCH=master
+case "${IF_NGX_BROTLI}" in 
+    "true"|"True")
+
+    case "${NGX_BROTLI_BRANCH}" in 
+        "")
+        branch_empty_notice "NGX_BROTLI_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export NGX_BROTLI_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${NGX_BROTLI_BRANCH}" "https://${GITHUB_URL}/google/ngx_brotli.git" "ngx_brotli"
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_NGX_BROTLI"
+    ;;
+esac
+
 
 # Clean up
 # ARG IF_CLEANUP=true
