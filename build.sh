@@ -58,7 +58,7 @@ if_invalid_notice(){
 
 git_clone(){
     print_info "Downloading ${2}, branch ${1}, into ${SOURCE_CODE_PATH}/${3}/"
-    git clone --depth 1 --single-branch --branch "${1}" "${2}" "${SOURCE_CODE_PATH}/${3}/"
+    git clone --recurse-submodules -j8 --depth 1 --single-branch --branch "${1}" "${2}" "${SOURCE_CODE_PATH}/${3}/"
 }
 
 get_releases(){
@@ -77,11 +77,10 @@ get_releases(){
     curl -LSo "/tmp/__${2}_${3}_releases.tar.gz" "$(printf "%s \n" "${__github_api_key_result}" | jq -r '.assets[0].browser_download_url')"
 
     # REMEMBER: ${1} includes a path separator!
+    printf "%s  %s" "$(printf "%s \n" "${__github_api_key_result}" | jq -r '.assets[0].digest'| cut -d ':' -f 2)" "/tmp/__${2}_${3}_releases.tar.gz" > "/tmp/__${2}_${3}.sha256"
 
-    printf "%s  %s \n" "$(printf "%s \n" "${__github_api_key_result}" | jq -r '.assets[0].digest'| cut -d ':' -f 2)" "/tmp/__${2}_${3}_releases.tar.gz" > "/tmp/__${1}_${2}.sha256"
 
-
-    if ! sha256sum -c "/tmp/__${1}_${2}.sha256"; then
+    if ! sha256sum -c "/tmp/__${2}_${3}.sha256"; then
         case "${4}" in
             "")
             print_warning "We detected a checksum mismatch. Retrying"
@@ -156,6 +155,8 @@ case "${PACKAGE_MANAGER}" in
     pkgconf \
     zlib1g-dev \
     libzstd-dev  \
+    libxml2-dev \
+    libxslt1-dev \
     ca-certificates # \
     # wget \
     ;;
@@ -190,6 +191,8 @@ case "${PACKAGE_MANAGER}" in
     m4 \
     automake \
     zstd-dev \
+    libxml2-dev \
+    libxslt-dev \
     ca-certificates #\
     # bash \
     # wget
@@ -223,6 +226,8 @@ case "${PACKAGE_MANAGER}" in
     pkgconf \
     zlib-devel \
     libzstd-devel \
+    libxml2-devel \
+    libxslt-devel \
     ca-certificates # \
     # wget \
     ;;
@@ -453,7 +458,7 @@ case "${IF_LUA_NGINX_MODULE}" in
         ;;
     esac
 
-    git_clone "${LUA_NGINX_MODULE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-nginx-module.git" "lua-resty-core"
+    git_clone "${LUA_NGINX_MODULE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-nginx-module.git" "lua-nginx-module"
     ;;
 
     "false"|"False")
@@ -489,7 +494,7 @@ case "${IF_LUA_RESTY_CORE}" in
         ;;
     esac
 
-    git_clone "${LUA_RESTY_CORE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-core.git" "lua-nginx-module"
+    git_clone "${LUA_RESTY_CORE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-core.git" "lua-resty-core"
 
     cd "${SOURCE_CODE_PATH}/lua-resty-core/"
 
@@ -528,7 +533,7 @@ case "${IF_LUA_RESTY_LRUCACHE}" in
         ;;
     esac
 
-    git_clone "${LUA_RESTY_LRUCACHE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-lrucache.git " "lua-resty-lrucache"
+    git_clone "${LUA_RESTY_LRUCACHE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-lrucache.git" "lua-resty-lrucache"
 
     ;;
 
@@ -848,7 +853,7 @@ case "${IF_LUA_RESTY_OPENSSL}" in
 
 esac
 
-# Download https://github.com/bungle/lua-resty-session
+# Download https://github.com/cdbattags/lua-resty-session
 # ARG IF_LUA_RESTY_SESSION=true
 # ARG LUA_RESTY_SESSION_BRANCH=master
 
@@ -888,7 +893,7 @@ case "${IF_LUA_RESTY_SESSION}" in
 
 esac
 
-# Download https://github.com/bungle/lua-resty-jwt
+# Download https://github.com/cdbattags/lua-resty-jwt
 # ARG IF_LUA_RESTY_JWT=true
 # ARG LUA_RESTY_JWT_BRANCH=master
 
@@ -909,7 +914,7 @@ case "${IF_LUA_RESTY_JWT}" in
         ;;
     esac
 
-    git_clone "${LUA_RESTY_JWT_BRANCH}" "https://${GITHUB_URL}/bungle/lua-resty-jwt.git" "lua-resty-jwt"
+    git_clone "${LUA_RESTY_JWT_BRANCH}" "https://${GITHUB_URL}/cdbattags/lua-resty-jwt.git" "lua-resty-jwt"
 
     cd "${SOURCE_CODE_PATH}/lua-resty-jwt"
 
@@ -1031,7 +1036,7 @@ case "${IF_LIBMAXMINDDB}" in
 
     cd "${SOURCE_CODE_PATH}/libmaxminddb/"
 
-    ./bootstrap
+    # ./bootstrap
     ./configure --prefix="${COMPILED_INSTALL_PREFIX}"
     make -j"$(nproc)"
     make check
@@ -1108,6 +1113,8 @@ case "${IF_NJS}" in
     esac
 
     git_clone "${NJS_BRANCH}" "https://${GITHUB_URL}/nginx/njs.git" "njs"
+
+    cd "${SOURCE_CODE_PATH}/njs/"
 
     ;;
 
@@ -1276,6 +1283,8 @@ esac
 # ARG NGINX_MODULE_OPTION="-dynamic"
 # ARG NGINX_MAKE_OPTION="modules"
 
+cd "${SOURCE_CODE_PATH}/"
+
 case "${IF_NGINX}" in 
     "true"|"True")
 
@@ -1291,7 +1300,7 @@ case "${IF_NGINX}" in
     
     cd "${SOURCE_CODE_PATH}/Nginx"
 
-    case "${IF_CORAZA}" in
+    case "${IF_CORAZA_NGINX}" in
         "true"|"True")
         export INTERNAL_CORAZA_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/coraza-nginx"
         ;;
@@ -1300,63 +1309,75 @@ case "${IF_NGINX}" in
     case "${IF_NGX_DEVEL_KIT}" in
         "true"|"True")
         export INTERNAL_NGX_DEVEL_KIT_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_devel_kit/"
+        ;;
     esac
 
     case "${IF_LUA_NGINX_MODULE}" in 
         "true"|"True")
         export INTERNAL_LUA_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/lua-nginx-module"
+        ;;
     esac
 
     case "${IF_NGX_HTTP_GEOIP2_MODULE}" in
         "true"|"True")
         export INTERNAL_NGX_HTTP_GEOIP2_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_http_geoip2_module"
+        ;;
     esac
 
     case "${IF_NGX_FANCYINDEX}" in
         "true"|"True")
         export INTERNAL_NGX_FANCYINDEX_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx-fancyindex"
+        ;;
     esac
 
     case "${IF_NJS}" in
         "true"|"True")
         export INTERNAL_NJS_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/njs/nginx"
+        # NJS enables QuickJS by default. We do not need QuickJS.
+        # Refer to to https://github.com/nginx/njs/blob/master/nginx/config
+        export NJS_QUICKJS=NO
+        ;;
     esac
 
     case "${IF_HEADERS_MORE_NGINX_MODULE}" in
         "true"|"True")
         export INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/headers-more-nginx-module"
+        ;;
     esac
 
     case "${IF_NGINX_RTMP_MODULE}" in
         "true"|"True")
         export INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/nginx-rtmp-module"
+        ;;
     esac
 
     case "${IF_ZSTD_NGINX_MODULE}" in
         "true"|"True")
         export INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/zstd-nginx-module"
+        ;;
     esac
 
     case "${IF_NGX_BROTLI}" in
         "true"|"True")
         export INTERNAL_NGX_BROTLI_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_brotli"
+        ;;
     esac
-
-    ./configure "${CONFIGURE_FLAGS}" \
-    "${INTERNAL_CORAZA_CONFIG_COMMAND}" \
-    "${INTERNAL_NGX_DEVEL_KIT_CONFIG_COMMAND}" \
-    "${INTERNAL_LUA_NGINX_MODULE_CONFIG_COMMAND}" \
-    "${INTERNAL_NGX_HTTP_GEOIP2_MODULE_CONFIG_COMMAND}" \
-    "${INTERNAL_NGX_FANCYINDEX_CONFIG_COMMAND}" \
-    "${INTERNAL_NJS_CONFIG_COMMAND}" \
-    "${INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND}" \
-    "${INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND}" \
-    "${INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND}" \
-    "${INTERNAL_NGX_BROTLI_CONFIG_COMMAND}"
+    
+    # shellcheck disable=SC2086
+    # CONFIGURE_FLAGS intentionally contains multiple arguments. Word splitting is required to pass each configure option separately, and empty optional arguments are ignored.
+    ./configure ${CONFIGURE_FLAGS} --with-cc-opt='-g -O2 -Werror=implicit-function-declaration -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -Wp,-D_FORTIFY_SOURCE=2 -fPIC' --with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
+    ${INTERNAL_CORAZA_CONFIG_COMMAND} \
+    ${INTERNAL_NGX_DEVEL_KIT_CONFIG_COMMAND} \
+    ${INTERNAL_LUA_NGINX_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_NGX_HTTP_GEOIP2_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_NGX_FANCYINDEX_CONFIG_COMMAND} \
+    ${INTERNAL_NJS_CONFIG_COMMAND} \
+    ${INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_NGX_BROTLI_CONFIG_COMMAND}
 
     make -j"$(nproc)" "${NGINX_MAKE_OPTION}"
-
-    make install
     
     ;;
     "false"|"False")
@@ -1399,6 +1420,8 @@ case "${IF_CLEANUP}" in
         libyajl-dev \
         pkgconf \
         libzstd-dev \
+        libxml2-dev \
+        libxslt1-dev \
         ca-certificates #\
         # wget \
         rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list
@@ -1427,6 +1450,8 @@ case "${IF_CLEANUP}" in
         yajl-devel \
         zlib-devel \
         libzstd-devel \
+        libxml2-devel \
+        libxslt-devel \
         pcre2-devel #\
         # wget \
         "${PACKAGE_MANAGER}" clean all
@@ -1486,7 +1511,7 @@ case "${IF_CLEANUP}" in
 
 esac
 
-sudo ldconfig
+ldconfig
 
 # ARG CUSTOM_EXIT_CMD=":"
 
