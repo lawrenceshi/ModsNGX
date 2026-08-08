@@ -15,6 +15,24 @@ ARG COMPILED_INSTALL_PREFIX=/usr/local
 
 FROM ${BUILD_BASE_IMAGE}:${BUILD_BASE_IMAGE_TAG} AS builder
 
+ARG VERSION="beta"
+
+LABEL \
+    org.opencontainers.image.authors="Lawrence <me@lawrenceshi.com>" \
+    org.opencontainers.image.title="ModsNGX" \
+    org.opencontainers.image.description="Nginx with third-party modules, built as dynamic modules." \
+    org.opencontainers.image.source="https://github.com/lawrenceshi/ModsNGX.git" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    space.lawrenceshi.image.ModsNGX.stage="builder" \
+    space.lawrenceshi.image.ModsNGX.copyright="Copyright © 2026 Lawrence." \
+    space.lawrenceshi.image.ModsNGX.notice="This image is intended for testing and development. Do not use in production." \
+    space.lawrenceshi.image.ModsNGX.easter_egg="I hereby grant myself the right to use this image in production, although such use is not recommended. I eat my own dog food." \
+    space.lawrenceshi.image.ModsNGX.warning="This software is provided 'AS IS', WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND." \
+    space.lawrenceshi.image.ModsNGX.legal="Nginx is a trademark of F5, Inc. This image is not affiliated with or endorsed by F5, Inc. or the Nginx project." \
+    space.lawrenceshi.image.ModsNGX.legal_summary="This is not an official Nginx image. Use at your own risk." \
+    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx"
+
 # If the user is in an environment where GitHub is blocked, they can use a mirror by setting this ARG. (If they can find a mirror.)
 ARG GITHUB_URL=github.com
 ARG GITHUB_API_URL=api.${GITHUB_URL}
