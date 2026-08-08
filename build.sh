@@ -1023,11 +1023,11 @@ case "${IF_LIBMAXMINDDB}" in
         branch_empty_notice "LIBMAXMINDDB_VERSION"
         ;;
         "master"|"main"|"default")
-        # Rewrite non-standard branch name
+        # Rewrite non-standard release tag name
         export LIBMAXMINDDB_VERSION=latest
         ;;
         *)
-        # Keep user-provided branch
+        # Keep user-provided tag 
         :
         ;;
     esac
@@ -1270,6 +1270,43 @@ case "${IF_NGX_BROTLI}" in
 
     *)
     if_invalid_notice "IF_NGX_BROTLI"
+    ;;
+esac
+
+# Download https://github.com/crowdsecurity/cs-nginx-bouncer
+# ARG IF_CROWDSEC_NGINX_BOUNCER=true
+# ARG CROWDSEC_NGINX_BOUNCER_VERSION=latest
+
+cd "${SOURCE_CODE_PATH}/"
+
+case "${IF_CROWDSEC_NGINX_BOUNCER}" in 
+    "true"|"True")
+
+    case "${CROWDSEC_NGINX_BOUNCER_VERSION}" in 
+        "")
+        branch_empty_notice "CROWDSEC_NGINX_BOUNCER_VERSION"
+        ;;
+
+        "main"|"master"|"default")
+        # Rewrite non-standard release tag name
+        export CROWDSEC_NGINX_BOUNCER_VERSION=latest
+        ;;
+
+        *)
+        # Keep user-provided tag
+        :
+        ;;
+    esac
+
+    get_releases "crowdsecurity/cs-nginx-bouncer" "${CROWDSEC_NGINX_BOUNCER_VERSION}" "cs-nginx-bouncer"
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_CROWDSEC_NGINX_BOUNCER"
     ;;
 esac
 
