@@ -15,14 +15,15 @@ ENV LUA_MODULE_PATH=${COMPILED_INSTALL_PREFIX}
 
 ENV LUA_VERSION=5.1
 
-# COPY libcoraza
-COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/libcoraza*.so* ${COMPILED_INSTALL_PREFIX}/lib/
+# COPY .so files
+COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/ ${COMPILED_INSTALL_PREFIX}/lib/
+
+# ========================================
+# Add comments for unnecessary software.
+# ========================================
 
 # COPY Coraza Nginx Module
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_coraza_module*.so* /usr/lib/nginx/modules/
-
-# COPY LuaJIT
-COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/libluajit*.so* ${COMPILED_INSTALL_PREFIX}/lib/
 
 # COPY Ngx-Devel-Kit
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ndk_http_module*.so* /usr/lib/nginx/modules/
@@ -35,9 +36,6 @@ COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/lua/${LUA_VERSION}/cjson*.so*
 
 # COPY GeoIp2
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_stream_geoip2_module*.so* /usr/lib/nginx/modules/
-
-# COPY libmaxminddb
-COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/libmaxminddb*.so* ${COMPILED_INSTALL_PREFIX}/lib/
 
 # COPY fancyindex
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_fancyindex_module*.so* /usr/lib/nginx/modules/
@@ -54,19 +52,40 @@ COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_zstd_*_module*.so* /
 # COPY ngx_brotli
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_brotli_*_module*.so* /usr/lib/nginx/modules/
 
+# =================================================
+# Remove comments for software that is not needed.
+# =================================================
+
+# REMOVE Lua Modules
+# RUN rm -rf ${LUA_MODULE_PATH}/lib/lua/*
+
+# REMOVE Libcoraza
+# RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/libcoraza*.so*
+
+# REMOVE LuaJIT
+# RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/libluajit*.so*
+
+# REMOVE libmaxminddb
+# RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/libmaxminddb*.so*
+
 # Copy the crowdsec-nginx-bouncer
 # Refer to https://github.com/crowdsecurity/cs-nginx-bouncer/blob/main/install.sh
 # The user should handle /etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf file on there own in the crowdsec image.
 ENV CROWDSEC_LIB_PATH=${COMPILED_INSTALL_PREFIX}"/lua/crowdsec"
 ARG CROWDSEC_DATA_PATH="/var/lib/crowdsec/lua/"
+
 RUN mkdir -p ${CROWDSEC_LIB_PATH}/plugins/crowdsec/ &&\
 mkdir -p ${CROWDSEC_DATA_PATH}/templates/
+
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${CROWDSEC_LIB_PATH}
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${CROWDSEC_DATA_PATH}/templates/
 
 # COPY Lua Modules
 COPY --from=builder ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/ ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}
+
+# Clean up .a, .la, and pkgconfig files
+RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.la ${COMPILED_INSTALL_PREFIX}/lib/lua/pkgconfig/
 
 # Fresh .so file cache
 RUN ldconfig
