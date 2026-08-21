@@ -1495,8 +1495,6 @@ case "${IF_CLEANUP}" in
 
 esac
 
-ldconfig
-
 # ARG CUSTOM_EXIT_CMD=":"
 
 ${CUSTOM_EXIT_CMD}
