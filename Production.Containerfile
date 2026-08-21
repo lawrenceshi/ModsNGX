@@ -6,8 +6,6 @@ ARG BASE_IMAGE_TAG=mainline
 
 FROM ${BUILD_IMAGE}:${BUILD_IMAGE_TAG} AS builder
 
-RUN :
-
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG} AS production
 
 ENV SOURCE_CODE_PATH=/usr/src
