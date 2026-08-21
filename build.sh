@@ -1260,6 +1260,8 @@ case "${IF_CROWDSEC_NGINX_BOUNCER}" in
     esac
 
     get_releases "crowdsecurity/cs-nginx-bouncer" "${CROWDSEC_NGINX_BOUNCER_VERSION}" "cs-nginx-bouncer"
+    sed -i "/^lua_package_path/d" ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf
+
     ;;
 
     "false"|"False")
