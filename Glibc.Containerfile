@@ -155,6 +155,6 @@ ARG CONFIGURE_FLAGS="--prefix=${NGINX_PREFIX} --sbin-path=/usr/sbin/nginx --modu
 ARG NGINX_MODULE_OPTION="-dynamic"
 ARG NGINX_MAKE_OPTION="modules"
 
-ADD --chmod=0755 ./build.sh /build.sh
+ADD --chmod=0755 ./build.sh ${SOURCE_CODE_PATH}/build.sh
 
-RUN /build.sh
+RUN ${SOURCE_CODE_PATH}/build.sh
