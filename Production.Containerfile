@@ -77,7 +77,7 @@ ARG CROWDSEC_DATA_PATH="/var/lib/crowdsec/lua/"
 RUN mkdir -p ${CROWDSEC_LIB_PATH}/plugins/crowdsec/ &&\
 mkdir -p ${CROWDSEC_DATA_PATH}/templates/
 
-COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/conf.d/crowdsec_nginx.conf
+COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/templates/conf.d/crowdsec_nginx.conf
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${CROWDSEC_LIB_PATH}
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${CROWDSEC_DATA_PATH}/templates/
 
@@ -86,6 +86,14 @@ COPY --from=builder ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/ ${LUA_MODULE_PATH
 
 # Clean up .a, .la, and pkgconfig files
 RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.la ${COMPILED_INSTALL_PREFIX}/lib/lua/pkgconfig/
+
+# LEGAL
+COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
+COPY --from=builder /usr/share/doc/ /usr/share/doc/
+
+ENV NGINX_PORT=80
+
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 
 # Fresh .so file cache
 RUN ldconfig

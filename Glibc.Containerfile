@@ -31,7 +31,8 @@ LABEL \
     space.lawrenceshi.image.ModsNGX.warning="This software is provided 'AS IS', WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND." \
     space.lawrenceshi.image.ModsNGX.legal="Nginx is a registered trademark of F5, Inc. This image is not affiliated with or endorsed by F5, Inc. or the Nginx project." \
     space.lawrenceshi.image.ModsNGX.legal_summary="This is not an official Nginx image. Use at your own risk." \
-    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx"
+    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx" \
+    space.lawrenceshi.image.ModsNGX.copyright.path="/copyright"
 
 # If the user is in an environment where GitHub is blocked, they can use a mirror by setting this ARG. (If they can find a mirror.)
 ARG GITHUB_URL=github.com
@@ -143,6 +144,10 @@ ARG CROWDSEC_NGINX_BOUNCER_VERSION=latest
 ARG LUAJIT_LIB=${COMPILED_INSTALL_PREFIX}/lib
 ARG LUAJIT_INC=${COMPILED_INSTALL_PREFIX}/include/luajit-2.1
 
+ENV NGINX_PORT=80
+
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+
 ## Handle Nginx Version ARG
 # Default Nginx mainline version.
 # Update periodically to keep dependencies current.
@@ -158,3 +163,5 @@ ARG NGINX_MAKE_OPTION="modules"
 ADD --chmod=0755 ./build.sh ${SOURCE_CODE_PATH}/build.sh
 
 RUN ${SOURCE_CODE_PATH}/build.sh
+
+RUN ldconfig
