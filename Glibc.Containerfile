@@ -163,3 +163,5 @@ ARG NGINX_MAKE_OPTION="modules"
 ADD --chmod=0755 ./build.sh ${SOURCE_CODE_PATH}/build.sh
 
 RUN ${SOURCE_CODE_PATH}/build.sh
+
+RUN ldconfig
