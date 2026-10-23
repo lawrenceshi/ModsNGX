@@ -350,6 +350,48 @@ case "${IF_CORAZA_NGINX}" in
 
 esac
 
+# Download https://github.com/coreruleset/coreruleset
+# ARG IF_CORE_RULE_SET=true
+# ARG CORE_RULE_SET_VERSION=latest
+
+cd "${SOURCE_CODE_PATH}/"
+
+case "${IF_CORE_RULE_SET}" in 
+    "true"|"True")
+
+    case "${CORE_RULE_SET_VERSION}" in 
+        "")
+        branch_empty_notice "CROWDSEC_NGINX_BOUNCER_VERSION"
+        ;;
+
+        "main"|"master"|"default")
+        # Rewrite non-standard release tag name
+        export CORE_RULE_SET_VERSION=latest
+        ;;
+
+        *)
+        # Keep user-provided tag
+        :
+        ;;
+    esac
+
+    get_releases "coreruleset/coreruleset" "${CORE_RULE_SET_VERSION}" "coreruleset"
+
+    mkdir -p /etc/coraza/rules
+
+	ln -s ${SOURCE_CODE_PATH}/coreruleset/rules /etc/coraza/rules
+
+    ;;
+
+    "false"|"False")
+    :    
+    ;;
+
+    *)
+    if_invalid_notice "IF_CROWDSEC_NGINX_BOUNCER"
+    ;;
+esac
+
 # Download and Compile the ngx-lua module
 # ARG IF_LUAJIT=true
 # ARG LUAJIT_BRANCH=v2.1-agentzh

@@ -91,6 +91,8 @@ RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.l
 COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
 COPY --from=builder /usr/share/doc/ /usr/share/doc/
 
+COPY --from=builder /etc/coraza/rules/ /etc/coraza/rules
+
 ENV NGINX_PORT=80
 
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
