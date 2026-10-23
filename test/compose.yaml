@@ -9,8 +9,10 @@ networks:
 services:
   nginx:
     # Change this path to test another base image.
-    # build: ../alpine
-    build: ../debian
+    # build: 
+    #   context: ../
+    #   dockerfile: "Production.Containerfile"
+    image: localhost/modsngx:beta
     container_name: nginx
     restart: never
     ports:
@@ -41,6 +43,7 @@ services:
       - ./logs:/var/log/nginx:z,ro
       - ./profiles.yaml:/etc/crowdsec/profiles.yaml:Z,ro
     environment:
+      # Testing purposes ONLY!!!
       - CROWDSEC_BYPASS_DB_VOLUME_CHECK=true
       # This is truly NOT safe for production!!! This is a SUPER WEAK API key and is ONLY for TESTING purposes.
       - BOUNCER_KEY_nginx_bouncer="key"
