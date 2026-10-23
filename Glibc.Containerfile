@@ -144,6 +144,10 @@ ARG CROWDSEC_NGINX_BOUNCER_VERSION=latest
 ARG LUAJIT_LIB=${COMPILED_INSTALL_PREFIX}/lib
 ARG LUAJIT_INC=${COMPILED_INSTALL_PREFIX}/include/luajit-2.1
 
+ENV NGINX_PORT=80
+
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+
 ## Handle Nginx Version ARG
 # Default Nginx mainline version.
 # Update periodically to keep dependencies current.

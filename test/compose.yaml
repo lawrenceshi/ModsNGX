@@ -20,9 +20,14 @@ services:
     volumes:
       - ./crowdsec-nginx-bouncer.conf:/etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf:Z,ro
       - ./logs:/var/log/nginx:z,rw
-      - ./nginx.conf:/etc/nginx/nginx.conf:Z,ro
+      - ./nginx.conf:/etc/nginx/templates/nginx.conf.template:Z,ro
     networks:
       - test_net
+    environment:
+      # Read more: https://hub.docker.com/_/nginx#using-environment-variables-in-nginx-configuration-new-in-119
+      - NGINX_PORT=8081
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+
   crowdsec:
     image: crowdsecurity/crowdsec
     container_name: crowdsec
