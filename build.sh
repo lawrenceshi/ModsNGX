@@ -1280,6 +1280,41 @@ case "${IF_NGX_BROTLI}" in
     ;;
 esac
 
+# Download https://github.com/openresty/lua-upstream-nginx-module
+# ARG IF_LUA_UPSTREAM_NGINX_MODULE=true
+# ARG LUA_UPSTREAM_NGINX_MODULE_BRANCH=master
+case "${IF_LUA_UPSTREAM_NGINX_MODULE}" in
+    "true"|"True")
+
+    case "${LUA_UPSTREAM_NGINX_MODULE_BRANCH}" in
+        "")
+        branch_empty_notice "LUA_UPSTREAM_NGINX_MODULE_BRANCH"
+        ;;
+
+        "main"|"latest"|"default")
+        # Rewrite non-standard branch name
+        export LUA_UPSTREAM_NGINX_MODULE_BRANCH=master
+        ;;
+
+        *)
+        # Keep user-provided branch
+        :
+        ;;
+    esac
+
+    git_clone "${LUA_UPSTREAM_NGINX_MODULE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-upstream-nginx-module.git" "lua-upstream-nginx-module"
+
+    ;;
+
+    "false"|"False")
+    :
+    ;;
+
+    *)
+    if_invalid_notice "IF_LUA_UPSTREAM_NGINX_MODULE"
+    ;;
+esac
+
 # Download https://github.com/crowdsecurity/cs-nginx-bouncer
 # ARG IF_CROWDSEC_NGINX_BOUNCER=true
 # ARG CROWDSEC_NGINX_BOUNCER_VERSION=latest
@@ -1393,6 +1428,12 @@ case "${IF_NGINX}" in
         INTERNAL_NGX_BROTLI_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/ngx_brotli"
         ;;
     esac
+
+    case "${IF_LUA_UPSTREAM_NGINX_MODULE}" in
+        "true"|"True")
+        INTERNAL_LUA_UPSTREAM_NGINX_MODULE_CONFIG_COMMAND="--add${NGINX_MODULE_OPTION}-module=${SOURCE_CODE_PATH}/lua-upstream-nginx-module"
+        ;;
+    esac
     
     # shellcheck disable=SC2086
     # CONFIGURE_FLAGS intentionally contains multiple arguments. Word splitting is required to pass each configure option separately, and empty optional arguments are ignored.
@@ -1405,6 +1446,7 @@ case "${IF_NGINX}" in
     ${INTERNAL_HEADERS_MORE_NGINX_MODULE_CONFIG_COMMAND} \
     ${INTERNAL_NGINX_RTMP_MODULE_CONFIG_COMMAND} \
     ${INTERNAL_ZSTD_NGINX_MODULE_CONFIG_COMMAND} \
+    ${INTERNAL_LUA_UPSTREAM_NGINX_MODULE_CONFIG_COMMAND} \
     ${INTERNAL_NGX_BROTLI_CONFIG_COMMAND}
 
     make -j"$(nproc)" "${NGINX_MAKE_OPTION}"
