@@ -31,7 +31,8 @@ LABEL \
     space.lawrenceshi.image.ModsNGX.warning="This software is provided 'AS IS', WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND." \
     space.lawrenceshi.image.ModsNGX.legal="Nginx is a registered trademark of F5, Inc. This image is not affiliated with or endorsed by F5, Inc. or the Nginx project." \
     space.lawrenceshi.image.ModsNGX.legal_summary="This is not an official Nginx image. Use at your own risk." \
-    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx"
+    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx" \
+    space.lawrenceshi.image.ModsNGX.copyright.text="This project used a lot of lot of open source project. In fact, it is fully built of open source projects! View the project README, or see the /copyright path for more information."
 
 # If the user is in an environment where GitHub is blocked, they can use a mirror by setting this ARG. (If they can find a mirror.)
 ARG GITHUB_URL=github.com

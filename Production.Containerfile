@@ -87,5 +87,9 @@ COPY --from=builder ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/ ${LUA_MODULE_PATH
 # Clean up .a, .la, and pkgconfig files
 RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.la ${COMPILED_INSTALL_PREFIX}/lib/lua/pkgconfig/
 
+# LEGAL
+COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
+COPY --from=builder /usr/share/doc/ /usr/share/doc/
+
 # Fresh .so file cache
 RUN ldconfig
