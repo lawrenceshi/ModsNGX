@@ -535,6 +535,10 @@ case "${IF_LUA_RESTY_LRUCACHE}" in
 
     git_clone "${LUA_RESTY_LRUCACHE_BRANCH}" "https://${GITHUB_URL}/openresty/lua-resty-lrucache.git" "lua-resty-lrucache"
 
+    cd "${SOURCE_CODE_PATH}/lua-resty-lrucache"
+
+    make install PREFIX="${LUA_MODULE_PATH}"
+
     ;;
 
     "false"|"False")
