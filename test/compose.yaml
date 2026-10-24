@@ -12,7 +12,7 @@ services:
     # build: 
     #   context: ../
     #   dockerfile: "Production.Containerfile"
-    image: localhost/modsngx:beta
+    image: docker.io/lawrenceshi/modsngx:beta
     container_name: nginx
     restart: never
     ports:

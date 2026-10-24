@@ -1,6 +1,9 @@
 # ModsNGX
 An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, Crowdsec, Coraza, etc. as dynamic modules.
 
+[GitHub Repository](https://github.com/lawrenceshi/ModsNGX) | [Docker Hub](https://hub.docker.com/r/lawrenceshi/modsngx/tags)
+
+
 
 ## Table Of Contents
 - [ModsNGX](#modsngx)
@@ -235,7 +238,7 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
 The way you can use it is very similar to the official Nginx Docker Image, but with other plugins. [Read More](https://hub.docker.com/_/nginx#how-to-use-this-image)
 
 Examples: 
-You can see the test folder for the configuration I use for testing.
+You can see the [test](https://github.com/lawrenceshi/ModsNGX/tree/dev/test) folder for the configuration I use for testing.
 
 
 General Notes:
