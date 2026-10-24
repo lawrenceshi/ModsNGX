@@ -264,7 +264,7 @@ ARG CROWDSEC_DATA_PATH="/var/lib/crowdsec/lua/"
 RUN mkdir -p ${CROWDSEC_LIB_PATH}/plugins/crowdsec/ &&\
 mkdir -p ${CROWDSEC_DATA_PATH}/templates/
 
-COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/templates/conf.d/crowdsec_nginx.conf
+COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.conf /etc/nginx/templates/conf.d/crowdsec_nginx.conf.template
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${CROWDSEC_LIB_PATH}
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${CROWDSEC_DATA_PATH}/templates/
 
