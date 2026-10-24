@@ -213,7 +213,7 @@ COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_lua_module*.so* /usr
 COPY --from=builder ${COMPILED_INSTALL_PREFIX}/lib/lua/${LUA_VERSION}/cjson*.so* ${COMPILED_INSTALL_PREFIX}/lib/lua/${LUA_VERSION}/
 
 # COPY GeoIp2
-COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_stream_geoip2_module*.so* /usr/lib/nginx/modules/
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_*_geoip2_module*.so* /usr/lib/nginx/modules/
 
 # COPY fancyindex
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_fancyindex_module*.so* /usr/lib/nginx/modules/
@@ -229,6 +229,9 @@ COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_zstd_*_module*.so* /
 
 # COPY ngx_brotli
 COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_brotli_*_module*.so* /usr/lib/nginx/modules/
+
+# COPY ngx_http_lua_upstream_module
+COPY --from=builder ${SOURCE_CODE_PATH}/nginx/objs/ngx_http_lua_upstream_module*.so* /usr/lib/nginx/modules/
 
 # =================================================
 # Remove comments for software that is not needed.
