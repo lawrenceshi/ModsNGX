@@ -279,6 +279,24 @@ RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.l
 # LEGAL
 COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
 COPY --from=builder /usr/share/doc/ /usr/share/doc/
+COPY README.md /README.md
+
+LABEL \
+    org.opencontainers.image.authors="Lawrence <me@lawrenceshi.com>" \
+    org.opencontainers.image.title="ModsNGX" \
+    org.opencontainers.image.description="Nginx with third-party modules, built as dynamic modules." \
+    org.opencontainers.image.source="https://github.com/lawrenceshi/ModsNGX.git" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    space.lawrenceshi.image.ModsNGX.stage="builder" \
+    space.lawrenceshi.image.ModsNGX.copyright="Copyright © 2026 Lawrence." \
+    space.lawrenceshi.image.ModsNGX.notice="This image is intended for testing and development. Do not use in production." \
+    space.lawrenceshi.image.ModsNGX.easter_egg="I hereby grant myself the right to use this image in production, although such use is not recommended." \
+    space.lawrenceshi.image.ModsNGX.warning="This software is provided 'AS IS', WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND." \
+    space.lawrenceshi.image.ModsNGX.legal="Nginx is a registered trademark of F5, Inc. This image is not affiliated with or endorsed by F5, Inc. or the Nginx project." \
+    space.lawrenceshi.image.ModsNGX.legal_summary="This is not an official Nginx image. Use at your own risk." \
+    space.lawrenceshi.image.ModsNGX.previous_name="slim-lua-nginx" \
+    space.lawrenceshi.image.ModsNGX.copyright.text="This project used a lot of lot of open source project. In fact, it is fully built of open source projects! View the project README.md on GitHub, or at /README.md in the image for more information."
 
 
 ENV NGINX_PORT=80
