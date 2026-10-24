@@ -39,6 +39,7 @@ LABEL \
     space.lawrenceshi.image.ModsNGX.copyright.text="This project used a lot of lot of open source project. In fact, it is fully built of open source projects! View the project README.md on GitHub, or at /README.md in the image for more information."
 
 COPY README.md /README.md
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # If the user is in an environment where GitHub is blocked, they can use a mirror by setting this ARG. (If they can find a mirror.)
 ARG GITHUB_URL=github.com
@@ -280,6 +281,8 @@ RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.l
 COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
 COPY --from=builder /usr/share/doc/ /usr/share/doc/
 COPY README.md /README.md
+
+COPY nginx.conf /etc/nginx/nginx.conf
 
 LABEL \
     org.opencontainers.image.authors="Lawrence <me@lawrenceshi.com>" \
