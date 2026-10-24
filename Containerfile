@@ -269,7 +269,7 @@ COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${CROWDSEC_
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${CROWDSEC_DATA_PATH}/templates/
 
 COPY --from=builder /etc/coraza/ /etc/coraza/
-COPY --from=builder /usr/src/coreruleset/rules /usr/src/coreruleset/rules
+COPY --from=builder /usr/src/coreruleset/ /usr/src/coreruleset/
 
 # COPY Lua Modules
 COPY --from=builder ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/ ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}
