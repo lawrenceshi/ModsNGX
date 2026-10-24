@@ -377,9 +377,9 @@ case "${IF_CORE_RULE_SET}" in
 
     get_releases "coreruleset/coreruleset" "${CORE_RULE_SET_VERSION}" "coreruleset"
 
-    mkdir -p /etc/coraza/rules
+    mkdir -p /etc/coraza/
 
-	ln -s ${SOURCE_CODE_PATH}/coreruleset/rules /etc/coraza/rules
+	ln -s ${SOURCE_CODE_PATH}/coreruleset/rules /etc/coraza/
 
     ;;
 

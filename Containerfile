@@ -259,6 +259,9 @@ COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/nginx/crowdsec_nginx.co
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/lib ${CROWDSEC_LIB_PATH}
 COPY --from=builder ${SOURCE_CODE_PATH}/cs-nginx-bouncer/lua-mod/templates/ ${CROWDSEC_DATA_PATH}/templates/
 
+COPY --from=builder /etc/coraza/ /etc/coraza/
+COPY --from=builder /usr/src/coreruleset/rules /usr/src/coreruleset/rules
+
 # COPY Lua Modules
 COPY --from=builder ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/ ${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}
 
@@ -269,7 +272,6 @@ RUN rm -rf ${COMPILED_INSTALL_PREFIX}/lib/*.a ${COMPILED_INSTALL_PREFIX}/lib/*.l
 COPY --from=builder /usr/share/common-licenses/ /usr/share/common-licenses/
 COPY --from=builder /usr/share/doc/ /usr/share/doc/
 
-COPY --from=builder /etc/coraza/rules/ /etc/coraza/rules
 
 ENV NGINX_PORT=80
 
