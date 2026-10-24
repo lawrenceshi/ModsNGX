@@ -32,7 +32,8 @@ https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
         - [Coraza WAF:](#coraza-waf-1)
         - [Crowdsec:](#crowdsec-1)
         - [LUA:](#lua-1)
-      - [Nginx Plugins:](#nginx-plugins-1)
+        - [Nginx Plugins:](#nginx-plugins-1)
+        - [Others](#others)
     - [Copies of Common License:](#copies-of-common-license)
       - [Apache License 2.0](#apache-license-20)
       - [GNU GPLv3](#gnu-gplv3)
@@ -816,7 +817,7 @@ License:
 
 ---
 
-#### Nginx Plugins:
+##### Nginx Plugins:
 - [ngx_http_geoip2_module](https://github.com/leev/ngx_http_geoip2_module)
   - Author: Lee Valentine \<<lee@leev.net>\>
   - License (Cited from https://github.com/leev/ngx_http_geoip2_module/blob/master/LICENSE):
@@ -1006,7 +1007,69 @@ License:
     > 
     > THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     > 
-> 
+
+---
+
+##### Others
+
+- [Nginx](https://nginx.org/)
+  - Owner: F5 / Nginx, inc.
+  - License (Cited from https://github.com/nginx/nginx/blob/master/LICENSE):
+    > Copyright (C) 2002-2021 Igor Sysoev
+    > Copyright (C) 2011-2026 Nginx, Inc.
+    > All rights reserved.
+    > 
+    > Redistribution and use in source and binary forms, with or without
+    > modification, are permitted provided that the following conditions
+    > are met:
+    > 1. Redistributions of source code must retain the above copyright
+    >    notice, this list of conditions and the following disclaimer.
+    > 2. Redistributions in binary form must reproduce the above copyright
+    >    notice, this list of conditions and the following disclaimer in the
+    >    documentation and/or other materials provided with the distribution.
+    > 
+    > THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+    > ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    > IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    > ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+    > FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    > DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    > OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    > HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    > LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+    > OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    > SUCH DAMAGE.
+- [Nginx Docker](https://github.com/nginx/docker-nginx)
+  - Owner: F5, inc.
+  - License (Cited from https://github.com/nginx/docker-nginx/blob/master/LICENSE):
+    > Copyright (C) 2011-2023 F5, Inc.
+    > All rights reserved.
+    > 
+    > Redistribution and use in source and binary forms, with or without
+    > modification, are permitted provided that the following conditions
+    > are met:
+    > 1. Redistributions of source code must retain the above copyright
+    >    notice, this list of conditions and the following disclaimer.
+    > 2. Redistributions in binary form must reproduce the above copyright
+    >    notice, this list of conditions and the following disclaimer in the
+    >    documentation and/or other materials provided with the distribution.
+    > 
+    > THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+    > ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    > IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    > ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+    > FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    > DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    > OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    > HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    > LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+    > OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    > SUCH DAMAGE.
+
+- [Debian](https://www.debian.org/)
+  - Owner (Cited from https://www.debian.org/license): Software in the Public Interest, Inc. and others
+  - License:
+    - See https://www.debian.org/legal/licenses/
 
 [Back to TOC](#table-of-contents)
 
