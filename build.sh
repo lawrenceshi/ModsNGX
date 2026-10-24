@@ -925,7 +925,8 @@ case "${IF_LUA_RESTY_SESSION}" in
     cd "${SOURCE_CODE_PATH}/lua-resty-session"
 
     mkdir -p "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/"
-    cp -r lib/resty/session/* "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/"
+    cp -r ./lib/resty/session.lua "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session.lua"
+    cp -r ./lib/resty/session/* "${LUA_MODULE_PATH}/lib/lua/${LUA_VERSION}/resty/session/"
 
     ;;
 
