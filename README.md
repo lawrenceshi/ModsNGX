@@ -40,13 +40,18 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
 - Based on Nginx.
 - Comes all prepared.
 - Inludes useful plugins.
+- Slim size.
 
 ## Quick Start:
 
 You need Docker or Podman.
 
 ```Docker
-docker pull docker.io
+docker run docker.io/lawrenceshi/modsngx:beta
+```
+or
+```Podman
+podman run docker.io/lawrenceshi/modsngx:beta
 ```
 
 [Read More (Recommended)](#how-to-use)
@@ -171,6 +176,7 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
 ### There are a few ways to use this image:
 
 1. Pull and use raw:
+    - `docker run docker.io/lawrenceshi/modsngx:beta` or `podman run docker.io/lawrenceshi/modsngx:beta`
     - In this case, I suggest you to:
       - Mount your Nginx config files to `/etc/nginx/nginx.conf` and `/etc/nginx/conf.d/`
       - Mount your html files to a cutomized location.
