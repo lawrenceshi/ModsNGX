@@ -1,0 +1,51 @@
+# This file is ONLY for Testing cases.
+# NEVER use this in a production environment!
+networks:
+  test_net:
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.10
+services:
+  nginx:
+    # Change this path to test another base image.
+    # build: 
+    #   context: ../
+    #   dockerfile: "Production.Containerfile"
+    image: docker.io/lawrenceshi/modsngx:beta
+    container_name: nginx
+    restart: never
+    ports:
+      - "8081:8081" # HTTP 
+    expose:
+     - "8081"
+    volumes:
+      - ./crowdsec-nginx-bouncer.conf:/etc/crowdsec/bouncers/crowdsec-nginx-bouncer.conf:Z,ro
+      - ./logs:/var/log/nginx:z,rw
+      - ./nginx.conf:/etc/nginx/templates/nginx.conf.template:Z,ro
+    networks:
+      - test_net
+    environment:
+      # Read more: https://hub.docker.com/_/nginx#using-environment-variables-in-nginx-configuration-new-in-119
+      - NGINX_PORT=8081
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    restart: never
+    ports:
+      - "8080:8080"
+    expose:
+     - "8080"
+    volumes:
+      - ./acquis.yaml:/etc/crowdsec/acquis.yaml:Z,ro
+      - ./logs:/var/log/nginx:z,ro
+      - ./profiles.yaml:/etc/crowdsec/profiles.yaml:Z,ro
+    environment:
+      # Testing purposes ONLY!!!
+      - CROWDSEC_BYPASS_DB_VOLUME_CHECK=true
+      # This is truly NOT safe for production!!! This is a SUPER WEAK API key and is ONLY for TESTING purposes.
+      - BOUNCER_KEY_nginx_bouncer="key"
+    networks:
+      - test_net

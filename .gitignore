@@ -47,6 +47,7 @@ nosetests.xml
 coverage.xml
 *.cover
 *.py.cover
+*.lcov
 .hypothesis/
 .pytest_cache/
 cover/
@@ -122,13 +123,14 @@ ipython_config.py
 # pixi.lock
 #   Pixi creates a virtual environment in the .pixi directory, just like venv module creates one
 #   in the .venv directory. It is recommended not to include this directory in version control.
-.pixi
+.pixi/*
+!.pixi/config.toml
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 
 # Celery stuff
-celerybeat-schedule
+celerybeat-schedule*
 celerybeat.pid
 
 # Redis
@@ -216,3 +218,48 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Add Note.md to prevent uploading my notes
+[Nn][Oo][Tt][Ee][Ss].[Mm][Dd]
+
+*.[Nn][Oo][Tt][Ee]
+*.[Nn][Oo][Tt][Ee][Ss]
+
+# Based on GitHub's VisualStudioCode.gitignore template (CC0)
+# https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+!*.code-workspace
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# Based on GitHub's Vim.gitignore template (CC0)
+# https://github.com/github/gitignore/blob/main/Global/Vim.gitignore
+# Vim
+
+# Swap
+[._]*.s[a-v][a-z]
+# comment out the next line if you don't need vector files
+!*.svg
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Session
+Session.vim
+Sessionx.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags
+# Persistent undo
+[._]*.un~
