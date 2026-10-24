@@ -3,7 +3,7 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
 
 [GitHub Repository](https://github.com/lawrenceshi/ModsNGX) | [Docker Hub](https://hub.docker.com/r/lawrenceshi/modsngx/tags)
 
-https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
+
 
 ## Table Of Contents
 - [ModsNGX](#modsngx)
@@ -1906,5 +1906,7 @@ For the [Apache License 2.0](#apache-license-20), there are also a separate file
 ## DISCLAIMER
 
 AI (Artificial Intelligence) is used for assistance in this project.
+
+This project participated in the [Stardance](https://stardance.space) event of [Hackclub](https://hackclub.com/)
 
 [Back to TOC](#table-of-contents)
