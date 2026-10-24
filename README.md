@@ -3,9 +3,9 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
 
 
 ## Table Of Contents
-
 - [ModsNGX](#modsngx)
   - [Table Of Contents](#table-of-contents)
+  - [Features](#features)
   - [Quick Start:](#quick-start)
   - [What is included?](#what-is-included)
       - [Coraza WAF:](#coraza-waf)
@@ -14,9 +14,11 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
       - [Nginx Plugins:](#nginx-plugins)
     - [Where are they located?](#where-are-they-located)
   - [The story:](#the-story)
+  - [Status:](#status)
   - [How to use?](#how-to-use)
     - [Here is a list of things that you may need:](#here-is-a-list-of-things-that-you-may-need)
     - [There are a few ways to use this image:](#there-are-a-few-ways-to-use-this-image)
+  - [Default nginx.conf](#default-nginxconf)
   - [How it Works?](#how-it-works)
   - [How to Contribute?](#how-to-contribute)
   - [In case you don't know](#in-case-you-dont-know)
@@ -32,6 +34,12 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
       - [Apache License 2.0](#apache-license-20)
       - [GNU GPLv3](#gnu-gplv3)
   - [DISCLAIMER](#disclaimer)
+
+## Features
+
+- Based on Nginx.
+- Comes all prepared.
+- Inludes useful plugins.
 
 ## Quick Start:
 
@@ -115,16 +123,22 @@ ngx_http_fancyindex_module.so     ngx_http_js_module-debug.so             ngx_ht
 
 ```
 
+You need to manually include them in your nginx.conf by using the `load_module` command. [Readmore](https://nginx.org/en/docs/ngx_core_module.html#load_module)
+
 [Back to TOC](#table-of-contents)
 
 
 ## The story:
 I wanted to use Crowdsec, Coraza, Lua with Nginx for my website. I was upgrading it at that time. So I created this Container that precompiled everything I need for my website into one whole Nginx. I started with all I needed, but I found out I wanted to add more, and the number of plugins grew a lot.
 
-However, its current status is still currently "`It works on my machine.`", aka `beta` version.
-
 [Back to TOC](#table-of-contents)
 
+## Status:
+
+Debian based Version: "`It works on my machine.`", aka `beta`
+Alpine based Version: Not ready (does not even work on my machine).
+
+[Back to TOC](#table-of-contents)
 
 ## How to use?
 Well, the fact is, setting up a website on your own is not as easy as using Github Pages. 
@@ -164,6 +178,7 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
       - `load_module path/to/modules/module_name.so;`
       - E.g, `load_module modules/ngx_http_headers_more_filter_module.so;`
       - Click [Here](#where-are-they-located) to see the file names of the Nginx Modules.
+    - **I may push update the image on Dockerhub without changing the tag! This might cause the version to change! Also, I may not update the image on Dockerhub regularly, so it is highly recommended to build it on your own.**
     - You will be able to access the Lua Plugins by using the following command inside any `lua_block`:
       - require("path.name")
       - E.g., `require("cjson")`
@@ -199,6 +214,7 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
     - Save the file.
     - Build
       - You can use `docker build . -t name:tag` to build the image.
+    - If you are using this in production environment (not recommended), **don't forget to lock the versions of the modules and plugins!** The image will pull the latest versions of everything by default
 
     - See the comments in the Containerfile for more information. I feel like it is clear enough in the file.
 3. Use it without Docker/Podman:
@@ -224,6 +240,31 @@ General Notes:
 ---
 
 [Back to TOC](#table-of-contents)
+
+## Default nginx.conf
+
+The default nginx.conf in this image is different from the default nginx.conf in the Official Nginx Docker image. You can access it by viewing the `nginx.conf` file in the GitHub repository.
+
+Briefly, we changed:
+```Nginx
+
+    tcp_nopush     on;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 5;
+
+    # Brotli compression
+    brotli on;
+    brotli_comp_level 5;
+    brotli_min_length 1024;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+```
 
 ## How it Works?
 
