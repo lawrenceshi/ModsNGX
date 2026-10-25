@@ -1,7 +1,7 @@
 # ModsNGX
 An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, Crowdsec, Coraza, etc. as dynamic modules.
 
-[GitHub Repository](https://github.com/lawrenceshi/ModsNGX) | [Docker Hub](https://hub.docker.com/r/lawrenceshi/modsngx/tags)
+[GitHub Repository](https://github.com/lawrenceshi/ModsNGX) | [Docker Hub](https://hub.docker.com/r/lawrenceshi/modsngx)
 
 https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
 
@@ -188,7 +188,7 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
       - `load_module path/to/modules/module_name.so;`
       - E.g, `load_module modules/ngx_http_headers_more_filter_module.so;`
       - Click [Here](#where-are-they-located) to see the file names of the Nginx Modules.
-    - **I may push update the image on Dockerhub without changing the tag! This might cause the version to change! Also, I may not update the image on Dockerhub regularly, so it is highly recommended to build it on your own.**
+    - **I may push update the image on Docker Hub without changing the tag! This might cause the version to change! Also, I may not update the image on Dockerhub regularly, so it is highly recommended to build it on your own.**
     - You will be able to access the Lua Plugins by using the following command inside any `lua_block`:
       - require("path.name")
       - E.g., `require("cjson")`
