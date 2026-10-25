@@ -51,11 +51,11 @@ https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
 You need Docker or Podman.
 
 ```Docker
-docker run docker.io/lawrenceshi/modsngx:beta
+docker run -d -p 80:80 -v ./path/to/nginx/config/conf.d:/etc/nginx/conf.d docker.io/lawrenceshi/modsngx:beta 
 ```
 or
 ```Podman
-podman run docker.io/lawrenceshi/modsngx:beta
+podman run -d -p 80:80 -v ./path/to/nginx/config/conf.d:/etc/nginx/conf.d docker.io/lawrenceshi/modsngx:beta 
 ```
 
 [Read More (Recommended)](#how-to-use)
@@ -234,13 +234,13 @@ Well, the fact is, setting up a website on your own is not as easy as using Gith
         - You can use the `docker cp <container_id_or_name>:<path_inside_container> <path_on_host>` command to do this.
 
       - If you don't mind setting up a lot of environment variables and messing up your environment, you can typically run `build.sh` on your computer. (Not suggested/supported.) We are not responsible for cleaning up in that case, and I really think there would be some , but typiccllly you can do that.
+
 4. Use it as a based image, and make your own Dockerfile.
    
 The way you can use it is very similar to the official Nginx Docker Image, but with other plugins. [Read More](https://hub.docker.com/_/nginx#how-to-use-this-image)
 
-Examples: 
+5. Examples: 
 You can see the [test](https://github.com/lawrenceshi/ModsNGX/tree/dev/test) folder for the configuration I use for testing.
-
 
 General Notes:
 - If you are running the Image rootless (mostly this happens when you use Podman), you be blocked to using the privileged ports. Read more: [Blogpost by @nawazdhandala](https://oneuptime.com/blog/post/2026-03-18-bind-privileged-ports-rootless-podman/view)
