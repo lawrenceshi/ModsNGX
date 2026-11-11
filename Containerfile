@@ -21,6 +21,9 @@ FROM ${BUILD_BASE_IMAGE}:${BUILD_BASE_IMAGE_TAG} AS builder
 
 ARG VERSION
 
+ARG BUILD_BASE_IMAGE
+ARG BUILD_BASE_IMAGE_TAG
+
 LABEL \
     org.opencontainers.image.authors="Lawrence <me@lawrenceshi.com>" \
     org.opencontainers.image.title="ModsNGX" \
@@ -284,6 +287,9 @@ COPY --from=builder /usr/share/doc/ /usr/share/doc/
 COPY README.md /README.md
 
 COPY nginx.conf /etc/nginx/nginx.conf
+
+ARG BASE_IMAGE
+ARG BASE_IMAGE_TAG
 
 LABEL \
     org.opencontainers.image.authors="Lawrence <me@lawrenceshi.com>" \
