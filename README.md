@@ -3,7 +3,7 @@ An OCI Container image (or Docker Image) that includes NGINX Mainline, LuaJIT, C
 
 [GitHub Repository](https://github.com/lawrenceshi/ModsNGX) | [Docker Hub](https://hub.docker.com/r/lawrenceshi/modsngx)
 
-https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
+https://github.com/user-attachments/assets/0a1e9482-e924-4bd7-8ab6-44a9e24714b5
 
 ## Table Of Contents
 - [ModsNGX](#modsngx)
