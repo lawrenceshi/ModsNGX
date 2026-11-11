@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/2a104fa8-269d-4ecf-beec-d6141be48371
   - [How to use?](#how-to-use)
     - [Here is a list of things that you may need:](#here-is-a-list-of-things-that-you-may-need)
     - [There are a few ways to use this image:](#there-are-a-few-ways-to-use-this-image)
+  - [TAGs](#tags)
   - [Default nginx.conf](#default-nginxconf)
   - [How it Works?](#how-it-works)
   - [How to Contribute?](#how-to-contribute)
@@ -248,6 +249,20 @@ General Notes:
 - I changed the environment `NGINX_ENVSUBST_OUTPUT_DIR` to `/etc/nginx` in the image because I used the environment variables in `nginx.conf` [Read more](https://hub.docker.com/_/nginx#using-environment-variables-in-nginx-configuration-new-in-119)
 
 ---
+
+[Back to TOC](#table-of-contents)
+
+## TAGs
+
+The Docker Hub image may not always be up to date, so consider building the image yourself. The build uses the latest available versions of dependencies and modules at build time.
+
+| Tag | Description |
+| --- | --- |
+| `beta` | **Recommended.** Points to the latest `beta` version build. |
+| `beta-nginx-A.B.C` | `beta` built with the specified Nginx version |
+| `beta-nginx-A.B.C-build-YEAR-MONTH-DATE` | `beta` built on the specified date. |
+
+In most cases, `beta` is the recommended tag. Depending on the build, all three tags may point to the same image.
 
 [Back to TOC](#table-of-contents)
 
